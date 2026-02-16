@@ -132,353 +132,351 @@ const AdminDashboard = () => {
                     toast.success('Product published!');
                 }, 500);
             }
-
-        }
-                // Reset form
+            // Reset form
             setFormData({ title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '' });
-    } catch (error) {
-        clearInterval(progressInterval);
-        setUploading(false);
-        setUploadProgress(0);
-        toast.error('Operation failed. Please try again.');
-    }
-};
+        } catch (error) {
+            clearInterval(progressInterval);
+            setUploading(false);
+            setUploadProgress(0);
+            toast.error('Operation failed. Please try again.');
+        }
+    };
 
-// Category-specific book count
-const countByCategory = (cat) => books.filter(b => b.category === cat).length;
+    // Category-specific book count
+    const countByCategory = (cat) => books.filter(b => b.category === cat).length;
 
-return (
-    <div className="container" style={{ padding: '6rem 1rem 3rem' }}>
-        <h1 className="outfit" style={{ marginBottom: '1.5rem', fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Layout size={32} className="text-gradient" /> Night Store Admin
-        </h1>
+    return (
+        <div className="container" style={{ padding: '6rem 1rem 3rem' }}>
+            <h1 className="outfit" style={{ marginBottom: '1.5rem', fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Layout size={32} className="text-gradient" /> Night Store Admin
+            </h1>
 
-        {/* Tab Buttons */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto' }}>
+            {/* Tab Buttons */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto' }}>
 
-            <button onClick={() => setActiveTab('add')} className={`tab-btn ${activeTab === 'add' ? 'active' : ''}`} style={{
-                padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
-                background: activeTab === 'add' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
-                color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'add' ? '600' : '400'
-            }}>
-                {editingId ? <><Pencil size={18} /> Edit Product</> : <><PlusCircle size={18} /> Add Product</>}
-            </button>
-            <button onClick={() => setActiveTab('manage')} className={`tab-btn ${activeTab === 'manage' ? 'active' : ''}`} style={{
-                padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
-                background: activeTab === 'manage' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
-                color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'manage' ? '600' : '400'
-            }}>
-                <Package size={18} /> Inventory
-            </button>
-            <button onClick={() => setActiveTab('categories')} className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`} style={{
-                padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
-                background: activeTab === 'categories' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
-                color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'categories' ? '600' : '400'
-            }}>
-                <Tag size={18} /> Category Deals
-            </button>
-            <button onClick={() => setActiveTab('settings')} className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`} style={{
-                padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
-                background: activeTab === 'settings' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
-                color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'settings' ? '600' : '400'
-            }}>
-                <Settings size={18} /> Settings
-            </button>
-        </div>
+                <button onClick={() => setActiveTab('add')} className={`tab-btn ${activeTab === 'add' ? 'active' : ''}`} style={{
+                    padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
+                    background: activeTab === 'add' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                    color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'add' ? '600' : '400'
+                }}>
+                    {editingId ? <><Pencil size={18} /> Edit Product</> : <><PlusCircle size={18} /> Add Product</>}
+                </button>
+                <button onClick={() => setActiveTab('manage')} className={`tab-btn ${activeTab === 'manage' ? 'active' : ''}`} style={{
+                    padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
+                    background: activeTab === 'manage' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                    color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'manage' ? '600' : '400'
+                }}>
+                    <Package size={18} /> Inventory
+                </button>
+                <button onClick={() => setActiveTab('categories')} className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`} style={{
+                    padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
+                    background: activeTab === 'categories' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                    color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'categories' ? '600' : '400'
+                }}>
+                    <Tag size={18} /> Category Deals
+                </button>
+                <button onClick={() => setActiveTab('settings')} className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`} style={{
+                    padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
+                    background: activeTab === 'settings' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                    color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'settings' ? '600' : '400'
+                }}>
+                    <Settings size={18} /> Settings
+                </button>
+            </div>
 
-        {/* ADD / EDIT PRODUCT TAB */}
-        {activeTab === 'add' && (
-            <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem' }}>
-                        {editingId ? <><Pencil size={18} /> Edit Product</> : <><PlusCircle size={18} /> Add Product</>}
-                    </h2>
-                    {editingId && (
-                        <button onClick={cancelEdit} className="btn" style={{ fontSize: '0.8rem', border: '1px solid var(--text-muted)', padding: '0.3rem 0.8rem' }}>
-                            Cancel Edit
-                        </button>
-                    )}
-                </div>
-
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                    {/* Type */}
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
-                            <input type="radio" checked={formData.type === 'free'} onChange={() => setFormData({ ...formData, type: 'free' })} /> Free
-                        </label>
-                        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
-                            <input type="radio" checked={formData.type === 'paid'} onChange={() => setFormData({ ...formData, type: 'paid' })} /> Paid
-                        </label>
+            {/* ADD / EDIT PRODUCT TAB */}
+            {activeTab === 'add' && (
+                <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem' }}>
+                            {editingId ? <><Pencil size={18} /> Edit Product</> : <><PlusCircle size={18} /> Add Product</>}
+                        </h2>
+                        {editingId && (
+                            <button onClick={cancelEdit} className="btn" style={{ fontSize: '0.8rem', border: '1px solid var(--text-muted)', padding: '0.3rem 0.8rem' }}>
+                                Cancel Edit
+                            </button>
+                        )}
                     </div>
 
-                    <input placeholder="Product Title (e.g. NordVPN 1 Year)" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} style={inputStyle} />
-                    <input placeholder="Short Tagline / Excerpt" value={formData.excerpt} onChange={e => setFormData({ ...formData, excerpt: e.target.value })} style={inputStyle} />
-
-                    {/* Image Selection */}
-                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-                        <div style={{ flex: 1, position: 'relative' }}>
-                            <input
-                                placeholder="Product Image URL"
-                                value={formData.image ? (formData.image.startsWith('data:') ? '(Uploaded Image)' : formData.image) : ''}
-                                onChange={e => setFormData({ ...formData, image: e.target.value })}
-                                style={{ ...inputStyle, paddingRight: '2rem' }}
-                            />
-                            {formData.image && <img src={formData.image} alt="Preview" style={{ position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)', width: '24px', height: '24px', borderRadius: '4px', objectFit: 'cover', border: '1px solid white' }} />}
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        {/* Type */}
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
+                                <input type="radio" checked={formData.type === 'free'} onChange={() => setFormData({ ...formData, type: 'free' })} /> Free
+                            </label>
+                            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
+                                <input type="radio" checked={formData.type === 'paid'} onChange={() => setFormData({ ...formData, type: 'paid' })} /> Paid
+                            </label>
                         </div>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>OR</span>
-                        <label className="btn" style={{ cursor: 'pointer', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
-                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
-                            <ImageIcon size={16} /> Upload
-                        </label>
-                    </div>
 
-                    {/* Category Dropdown */}
-                    <div className="admin-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                        <select
-                            value={formData.category}
-                            onChange={e => setFormData({ ...formData, category: e.target.value })}
-                            style={{ ...inputStyle, cursor: 'pointer' }}
-                        >
-                            {categories.filter(c => c !== 'All').map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                        <input placeholder="Tags (e.g. vpn, software)" value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} style={inputStyle} />
-                    </div>
+                        <input placeholder="Product Title (e.g. NordVPN 1 Year)" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} style={inputStyle} />
+                        <input placeholder="Short Tagline / Excerpt" value={formData.excerpt} onChange={e => setFormData({ ...formData, excerpt: e.target.value })} style={inputStyle} />
 
-                    {formData.type === 'paid' && (
-                        <input placeholder="Price (e.g. Rs. 500)" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} style={{ ...inputStyle, borderColor: 'rgba(251,191,36,0.3)' }} />
-                    )}
+                        {/* Image Selection */}
+                        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                            <div style={{ flex: 1, position: 'relative' }}>
+                                <input
+                                    placeholder="Product Image URL"
+                                    value={formData.image ? (formData.image.startsWith('data:') ? '(Uploaded Image)' : formData.image) : ''}
+                                    onChange={e => setFormData({ ...formData, image: e.target.value })}
+                                    style={{ ...inputStyle, paddingRight: '2rem' }}
+                                />
+                                {formData.image && <img src={formData.image} alt="Preview" style={{ position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)', width: '24px', height: '24px', borderRadius: '4px', objectFit: 'cover', border: '1px solid white' }} />}
+                            </div>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>OR</span>
+                            <label className="btn" style={{ cursor: 'pointer', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+                                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+                                <ImageIcon size={16} /> Upload
+                            </label>
+                        </div>
 
-                    {/* WhatsApp Text */}
-                    <div style={{ background: 'rgba(37,211,102,0.05)', padding: '0.7rem', borderRadius: '10px', border: '1px solid rgba(37,211,102,0.2)' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#25D366', fontSize: '0.75rem', fontWeight: '600', marginBottom: '0.3rem' }}>
-                            <MessageCircle size={12} /> WhatsApp Message
-                        </label>
-                        <input placeholder='e.g. I want to buy this deal' value={formData.whatsappText} onChange={e => setFormData({ ...formData, whatsappText: e.target.value })} style={{ ...inputStyle, background: 'rgba(255,255,255,0.03)' }} />
-                    </div>
+                        {/* Category Dropdown */}
+                        <div className="admin-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                            <select
+                                value={formData.category}
+                                onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                style={{ ...inputStyle, cursor: 'pointer' }}
+                            >
+                                {categories.filter(c => c !== 'All').map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                            <input placeholder="Tags (e.g. vpn, software)" value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} style={inputStyle} />
+                        </div>
 
-                    {/* Editor Toggle */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button type="button" onClick={() => setCodeView(!codeView)} className="btn" style={{ padding: '0.2rem 0.6rem', border: '1px solid var(--primary)', color: 'var(--primary)', fontSize: '0.75rem' }}>
-                            {codeView ? <><Eye size={12} /> Visual</> : <><Code size={12} /> Code</>}
+                        {formData.type === 'paid' && (
+                            <input placeholder="Price (e.g. Rs. 500)" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} style={{ ...inputStyle, borderColor: 'rgba(251,191,36,0.3)' }} />
+                        )}
+
+                        {/* WhatsApp Text */}
+                        <div style={{ background: 'rgba(37,211,102,0.05)', padding: '0.7rem', borderRadius: '10px', border: '1px solid rgba(37,211,102,0.2)' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#25D366', fontSize: '0.75rem', fontWeight: '600', marginBottom: '0.3rem' }}>
+                                <MessageCircle size={12} /> WhatsApp Message
+                            </label>
+                            <input placeholder='e.g. I want to buy this deal' value={formData.whatsappText} onChange={e => setFormData({ ...formData, whatsappText: e.target.value })} style={{ ...inputStyle, background: 'rgba(255,255,255,0.03)' }} />
+                        </div>
+
+                        {/* Editor Toggle */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button type="button" onClick={() => setCodeView(!codeView)} className="btn" style={{ padding: '0.2rem 0.6rem', border: '1px solid var(--primary)', color: 'var(--primary)', fontSize: '0.75rem' }}>
+                                {codeView ? <><Eye size={12} /> Visual</> : <><Code size={12} /> Code</>}
+                            </button>
+                        </div>
+
+                        <div className="quill-dark-theme">
+                            {codeView ? (
+                                <textarea value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} style={{ ...inputStyle, height: '220px', fontFamily: 'monospace', color: '#88e4ff', marginBottom: '2rem' }} placeholder="HTML Code..." />
+                            ) : (
+                                <ReactQuill theme="snow" value={formData.content} onChange={val => setFormData({ ...formData, content: val })} style={{ height: '220px', marginBottom: '2rem' }} />
+                            )}
+                        </div>
+                        <button type="submit" disabled={uploading} className="btn btn-primary" style={{ justifyContent: 'center', padding: '0.7rem', position: 'relative', overflow: 'hidden', opacity: uploading ? 0.9 : 1 }}>
+                            {uploading ? (
+                                <>
+                                    <div style={{
+                                        position: 'absolute', left: 0, top: 0, height: '100%',
+                                        width: `${uploadProgress}%`,
+                                        background: uploadProgress === 100 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255,255,255,0.15)',
+                                        transition: 'width 0.3s ease, background 0.3s ease',
+                                        borderRadius: '8px'
+                                    }} />
+                                    <span style={{ position: 'relative', zIndex: 1 }}>
+                                        {uploadProgress === 100 ? 'Completed' : `Uploading... ${Math.min(uploadProgress, 100)}%`}
+                                    </span>
+                                </>
+                            ) : (
+                                editingId ? 'Update Product' : 'Publish Deal'
+                            )}
                         </button>
-                    </div>
-
-                    <div className="quill-dark-theme">
-                        {codeView ? (
-                            <textarea value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} style={{ ...inputStyle, height: '220px', fontFamily: 'monospace', color: '#88e4ff', marginBottom: '2rem' }} placeholder="HTML Code..." />
-                        ) : (
-                            <ReactQuill theme="snow" value={formData.content} onChange={val => setFormData({ ...formData, content: val })} style={{ height: '220px', marginBottom: '2rem' }} />
-                        )}
-                    </div>
-                    <button type="submit" disabled={uploading} className="btn btn-primary" style={{ justifyContent: 'center', padding: '0.7rem', position: 'relative', overflow: 'hidden', opacity: uploading ? 0.9 : 1 }}>
-                        {uploading ? (
-                            <>
-                                <div style={{
-                                    position: 'absolute', left: 0, top: 0, height: '100%',
-                                    width: `${uploadProgress}%`,
-                                    background: uploadProgress === 100 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255,255,255,0.15)',
-                                    transition: 'width 0.3s ease, background 0.3s ease',
-                                    borderRadius: '8px'
-                                }} />
-                                <span style={{ position: 'relative', zIndex: 1 }}>
-                                    {uploadProgress === 100 ? 'Completed' : `Uploading... ${Math.min(uploadProgress, 100)}%`}
-                                </span>
-                            </>
-                        ) : (
-                            editingId ? 'Update Product' : 'Publish Deal'
-                        )}
-                    </button>
-                </form>
-            </div>
-        )}
-
-        {/* MANAGE PRODUCTS TAB */}
-        {activeTab === 'manage' && (
-            <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
-                <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Inventory ({books.length})</h2>
-
-                {/* Category filters */}
-                <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                    {categories.map(cat => (
-                        <span key={cat} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>
-                            {cat === 'All' ? `All (${books.length})` : `${cat} (${countByCategory(cat)} items)`}
-                        </span>
-                    ))}
+                    </form>
                 </div>
+            )}
 
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={books.map(b => b.id)} strategy={verticalListSortingStrategy}>
-                        {books.map(book => <SortableBook key={book.id} book={book} onDelete={deleteBook} onEdit={handleEdit} />)}
-                    </SortableContext>
-                </DndContext>
+            {/* MANAGE PRODUCTS TAB */}
+            {activeTab === 'manage' && (
+                <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
+                    <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Inventory ({books.length})</h2>
 
-                {books.length === 0 && <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>No products yet.</p>}
-            </div>
-        )}
+                    {/* Category filters */}
+                    <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                        {categories.map(cat => (
+                            <span key={cat} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>
+                                {cat === 'All' ? `All (${books.length})` : `${cat} (${countByCategory(cat)} items)`}
+                            </span>
+                        ))}
+                    </div>
 
-        {/* CATEGORY BUTTONS TAB */}
-        {activeTab === 'categories' && (
-            <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={books.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                            {books.map(book => <SortableBook key={book.id} book={book} onDelete={deleteBook} onEdit={handleEdit} />)}
+                        </SortableContext>
+                    </DndContext>
 
-                {/* ADD NEW CATEGORY */}
-                <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
-                    <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Manage Categories</h2>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <input
-                            placeholder="New Category Name (e.g. VPNs)"
-                            value={newCatName}
-                            onChange={e => setNewCatName(e.target.value)}
-                            style={{ ...inputStyle, flex: 1 }}
-                        />
+                    {books.length === 0 && <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>No products yet.</p>}
+                </div>
+            )}
+
+            {/* CATEGORY BUTTONS TAB */}
+            {activeTab === 'categories' && (
+                <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
+
+                    {/* ADD NEW CATEGORY */}
+                    <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
+                        <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Manage Categories</h2>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <input
+                                placeholder="New Category Name (e.g. VPNs)"
+                                value={newCatName}
+                                onChange={e => setNewCatName(e.target.value)}
+                                style={{ ...inputStyle, flex: 1 }}
+                            />
+                            <button
+                                onClick={() => {
+                                    if (newCatName.trim()) {
+                                        addCategory(newCatName.trim());
+                                        setNewCatName('');
+                                        toast.success('Category added');
+                                    }
+                                }}
+                                className="btn btn-primary"
+                                style={{ padding: '0.5rem 1rem' }}
+                            >
+                                <PlusCircle size={18} /> Add
+                            </button>
+                        </div>
+                    </div>
+
+                    <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Category Deals & Buttons</h2>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {categories.filter(c => c !== 'All').map(cat => {
+                            const btn = categoryButtons[cat] || { text: '', price: '', message: '' };
+                            const isFixed = ['Free', 'Paid'].includes(cat);
+                            return (
+                                <div key={cat} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '12px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                                        <h4 style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>{cat} <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>({countByCategory(cat)} items)</span></h4>
+
+                                        {!isFixed && (
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm(`Delete category "${cat}"? Products in this category will remain but filter will be removed.`)) {
+                                                        const catObj = customCategories.find(c => c.name === cat);
+                                                        if (catObj) {
+                                                            deleteCategory(catObj.id, cat);
+                                                            toast.success('Category deleted');
+                                                        } else {
+                                                            toast.error('Error finding category ID');
+                                                        }
+                                                    }
+                                                }}
+                                                className="btn"
+                                                style={{ padding: '0.3rem', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                        <input
+                                            placeholder="Button Text (e.g. View All Deals)"
+                                            value={btn.text}
+                                            onChange={e => updateCategoryButton(cat, { ...btn, text: e.target.value })}
+                                            style={inputStyle}
+                                        />
+                                        <input
+                                            placeholder="Offer / Price"
+                                            value={btn.price}
+                                            onChange={e => updateCategoryButton(cat, { ...btn, price: e.target.value })}
+                                            style={inputStyle}
+                                        />
+                                    </div>
+                                    <input
+                                        placeholder="WhatsApp Message"
+                                        value={btn.message}
+                                        onChange={e => updateCategoryButton(cat, { ...btn, message: e.target.value })}
+                                        style={{ ...inputStyle, marginTop: '0.5rem' }}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Also allow All category button */}
+                    <div style={{ marginTop: '1.5rem', background: 'rgba(22,163,74,0.05)', border: '1px solid rgba(22,163,74,0.2)', padding: '1rem', borderRadius: '12px' }}>
+                        <h4 style={{ marginBottom: '0.6rem', fontSize: '0.9rem', color: 'var(--accent-gold)' }}>All Products Button</h4>
+                        {(() => {
+                            const btn = categoryButtons['All'] || { text: '', price: '', message: '' };
+                            return (
+                                <>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                        <input placeholder="Button Text" value={btn.text} onChange={e => updateCategoryButton('All', { ...btn, text: e.target.value })} style={inputStyle} />
+                                        <input placeholder="Offer / Price" value={btn.price} onChange={e => updateCategoryButton('All', { ...btn, price: e.target.value })} style={inputStyle} />
+                                    </div>
+                                    <input placeholder="WhatsApp Message" value={btn.message} onChange={e => updateCategoryButton('All', { ...btn, message: e.target.value })} style={{ ...inputStyle, marginTop: '0.5rem' }} />
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
+
+            {/* SETTINGS TAB */}
+            {activeTab === 'settings' && (
+                <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
+                    <h2 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>⚙️ Settings</h2>
+
+                    {/* WhatsApp */}
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <h4 style={{ marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#25D366', fontSize: '0.9rem' }}><Phone size={14} /> WhatsApp Number</h4>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <input placeholder="e.g. 923301980891" value={tempWhatsapp} onChange={e => setTempWhatsapp(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+                            <button onClick={() => { updateWhatsappNumber(tempWhatsapp); toast.success('Saved!'); }} className="btn whatsapp-btn" style={{ padding: '0.4rem 0.7rem' }}><Phone size={14} /></button>
+                        </div>
+                        <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>With country code, no + sign</p>
+                    </div>
+
+                    {/* WhatsApp Group Link */}
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <h4 style={{ marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#25D366', fontSize: '0.9rem' }}><MessageCircle size={14} /> WhatsApp Group Link</h4>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <input placeholder="https://chat.whatsapp.com/..." value={tempGroupLink} onChange={e => setTempGroupLink(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+                            <button onClick={() => { updateWhatsappGroup(tempGroupLink); toast.success('Group link saved!'); }} className="btn whatsapp-btn" style={{ padding: '0.4rem 0.7rem' }}><MessageCircle size={14} /></button>
+                        </div>
+                        <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Shows on About page. Leave empty to hide.</p>
+                    </div>
+
+                    {/* Logo */}
+                    <div>
+                        <h4 style={{ marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}><Layout size={14} /> Logo</h4>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <input placeholder="Logo Image URL" value={tempLogo} onChange={e => setTempLogo(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+                            <button onClick={() => { updateLogo(tempLogo); toast.success('Logo saved'); }} className="btn btn-primary" style={{ padding: '0.4rem 0.7rem' }}><ImageIcon size={14} /></button>
+                        </div>
+                    </div>
+
+                    {/* Danger Zone */}
+                    <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)' }}>
+                        <h4 style={{ marginBottom: '0.8rem', color: '#ef4444', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <RotateCcw size={14} /> Reset System
+                        </h4>
+
                         <button
                             onClick={() => {
-                                if (newCatName.trim()) {
-                                    addCategory(newCatName.trim());
-                                    setNewCatName('');
-                                    toast.success('Category added');
+                                if (window.confirm('Reset all data to default products?')) {
+                                    resetToDefaults();
                                 }
                             }}
-                            className="btn btn-primary"
-                            style={{ padding: '0.5rem 1rem' }}
+                            className="btn"
+                            style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', width: '100%', justifyContent: 'center' }}
                         >
-                            <PlusCircle size={18} /> Add
+                            <RotateCcw size={16} /> Reset to Default
                         </button>
                     </div>
                 </div>
-
-                <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Category Deals & Buttons</h2>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {categories.filter(c => c !== 'All').map(cat => {
-                        const btn = categoryButtons[cat] || { text: '', price: '', message: '' };
-                        const isFixed = ['Free', 'Paid'].includes(cat);
-                        return (
-                            <div key={cat} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '12px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                                    <h4 style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>{cat} <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>({countByCategory(cat)} items)</span></h4>
-
-                                    {!isFixed && (
-                                        <button
-                                            onClick={() => {
-                                                if (window.confirm(`Delete category "${cat}"? Products in this category will remain but filter will be removed.`)) {
-                                                    const catObj = customCategories.find(c => c.name === cat);
-                                                    if (catObj) {
-                                                        deleteCategory(catObj.id, cat);
-                                                        toast.success('Category deleted');
-                                                    } else {
-                                                        toast.error('Error finding category ID');
-                                                    }
-                                                }
-                                            }}
-                                            className="btn"
-                                            style={{ padding: '0.3rem', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    )}
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                                    <input
-                                        placeholder="Button Text (e.g. View All Deals)"
-                                        value={btn.text}
-                                        onChange={e => updateCategoryButton(cat, { ...btn, text: e.target.value })}
-                                        style={inputStyle}
-                                    />
-                                    <input
-                                        placeholder="Offer / Price"
-                                        value={btn.price}
-                                        onChange={e => updateCategoryButton(cat, { ...btn, price: e.target.value })}
-                                        style={inputStyle}
-                                    />
-                                </div>
-                                <input
-                                    placeholder="WhatsApp Message"
-                                    value={btn.message}
-                                    onChange={e => updateCategoryButton(cat, { ...btn, message: e.target.value })}
-                                    style={{ ...inputStyle, marginTop: '0.5rem' }}
-                                />
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* Also allow All category button */}
-                <div style={{ marginTop: '1.5rem', background: 'rgba(22,163,74,0.05)', border: '1px solid rgba(22,163,74,0.2)', padding: '1rem', borderRadius: '12px' }}>
-                    <h4 style={{ marginBottom: '0.6rem', fontSize: '0.9rem', color: 'var(--accent-gold)' }}>All Products Button</h4>
-                    {(() => {
-                        const btn = categoryButtons['All'] || { text: '', price: '', message: '' };
-                        return (
-                            <>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                                    <input placeholder="Button Text" value={btn.text} onChange={e => updateCategoryButton('All', { ...btn, text: e.target.value })} style={inputStyle} />
-                                    <input placeholder="Offer / Price" value={btn.price} onChange={e => updateCategoryButton('All', { ...btn, price: e.target.value })} style={inputStyle} />
-                                </div>
-                                <input placeholder="WhatsApp Message" value={btn.message} onChange={e => updateCategoryButton('All', { ...btn, message: e.target.value })} style={{ ...inputStyle, marginTop: '0.5rem' }} />
-                            </>
-                        );
-                    })()}
-                </div>
-            </div>
-        )}
-
-        {/* SETTINGS TAB */}
-        {activeTab === 'settings' && (
-            <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
-                <h2 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>⚙️ Settings</h2>
-
-                {/* WhatsApp */}
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <h4 style={{ marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#25D366', fontSize: '0.9rem' }}><Phone size={14} /> WhatsApp Number</h4>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <input placeholder="e.g. 923301980891" value={tempWhatsapp} onChange={e => setTempWhatsapp(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-                        <button onClick={() => { updateWhatsappNumber(tempWhatsapp); toast.success('Saved!'); }} className="btn whatsapp-btn" style={{ padding: '0.4rem 0.7rem' }}><Phone size={14} /></button>
-                    </div>
-                    <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>With country code, no + sign</p>
-                </div>
-
-                {/* WhatsApp Group Link */}
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <h4 style={{ marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#25D366', fontSize: '0.9rem' }}><MessageCircle size={14} /> WhatsApp Group Link</h4>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <input placeholder="https://chat.whatsapp.com/..." value={tempGroupLink} onChange={e => setTempGroupLink(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-                        <button onClick={() => { updateWhatsappGroup(tempGroupLink); toast.success('Group link saved!'); }} className="btn whatsapp-btn" style={{ padding: '0.4rem 0.7rem' }}><MessageCircle size={14} /></button>
-                    </div>
-                    <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Shows on About page. Leave empty to hide.</p>
-                </div>
-
-                {/* Logo */}
-                <div>
-                    <h4 style={{ marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}><Layout size={14} /> Logo</h4>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <input placeholder="Logo Image URL" value={tempLogo} onChange={e => setTempLogo(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-                        <button onClick={() => { updateLogo(tempLogo); toast.success('Logo saved'); }} className="btn btn-primary" style={{ padding: '0.4rem 0.7rem' }}><ImageIcon size={14} /></button>
-                    </div>
-                </div>
-
-                {/* Danger Zone */}
-                <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)' }}>
-                    <h4 style={{ marginBottom: '0.8rem', color: '#ef4444', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <RotateCcw size={14} /> Reset System
-                    </h4>
-
-                    <button
-                        onClick={() => {
-                            if (window.confirm('Reset all data to default products?')) {
-                                resetToDefaults();
-                            }
-                        }}
-                        className="btn"
-                        style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', width: '100%', justifyContent: 'center' }}
-                    >
-                        <RotateCcw size={16} /> Reset to Default
-                    </button>
-                </div>
-            </div>
-        )}
-    </div>
-);
+            )}
+        </div>
+    );
 };
 
 const inputStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', padding: '0.6rem 0.7rem', borderRadius: '8px', color: 'white', fontSize: '0.85rem', outline: 'none', width: '100%' };
