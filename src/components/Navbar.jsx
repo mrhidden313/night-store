@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
-    const { isAdmin, logout, logo, activeCategory, setActiveCategory } = useContext(BookContext);
+    const { isAdmin, logout, logo, activeCategory, setActiveCategory, categories } = useContext(BookContext);
     const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
     const isHome = location.pathname === '/';
@@ -85,7 +85,7 @@ const Navbar = () => {
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none'
                 }}>
-                    {CATEGORIES.map(cat => (
+                    {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}

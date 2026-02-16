@@ -9,7 +9,7 @@ import BookCard from '../components/BookCard';
 
 const BookDetail = () => {
     const { id } = useParams();
-    const { books, whatsappNumber } = useContext(BookContext);
+    const { books, whatsappNumber, whatsappGroup } = useContext(BookContext);
     const book = books.find(b => String(b.id) === String(id));
 
     const [countdown, setCountdown] = useState(15);
@@ -85,22 +85,18 @@ const BookDetail = () => {
                     ) : (
                         <>
                             <h2 className="outfit" style={{ marginBottom: '1rem' }}>Get This For Free</h2>
-                            {canDownload ? (
-                                <a
-                                    href={whatsappLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn whatsapp-btn"
-                                    style={{ padding: '0.8rem 2rem', fontSize: '1rem' }}
-                                >
-                                    Claim on WhatsApp <MessageCircle size={20} />
-                                </a>
-                            ) : (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '0.9rem' }}>
-                                    <Clock className="spin" size={18} />
-                                    <span>Preparing link in <b>{countdown}s</b>...</span>
-                                </div>
-                            )}
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                                Join our community to get this instantly!
+                            </p>
+                            <a
+                                href={whatsappGroup || '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn whatsapp-btn"
+                                style={{ padding: '0.8rem 2rem', fontSize: '1rem', width: '100%', maxWidth: '300px', justifyContent: 'center' }}
+                            >
+                                <MessageCircle size={20} /> Join WhatsApp Group
+                            </a>
                         </>
                     )}
                 </div>

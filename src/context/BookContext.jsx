@@ -2,7 +2,8 @@ import { createContext, useState, useEffect } from 'react';
 import {
     getBooks, addBookAPI, updateBookAPI, deleteBookAPI, reorderBooksAPI,
     getSettings, saveSettings,
-    getCategoryButtons, saveCategoryButtons, resetToDefaults
+    getCategoryButtons, saveCategoryButtons, resetToDefaults,
+    getCategoriesAPI, addCategoryAPI, deleteCategoryAPI
 } from '../services/api';
 
 export const BookContext = createContext();
@@ -28,6 +29,10 @@ export const BookProvider = ({ children }) => {
     const [categoryButtons, setCategoryButtons] = useState({});
     const [activeCategory, setActiveCategory] = useState('All');
 
+    // Categories State
+    const [categories, setCategories] = useState(['All', 'Free', 'Paid']); // UI list
+    const [customCategories, setCustomCategories] = useState([]); // DB list
+
     // Load data on mount
     useEffect(() => {
         const fetchBooks = async () => {
@@ -38,14 +43,21 @@ export const BookProvider = ({ children }) => {
         };
         fetchBooks();
 
+        const fetchCategories = async () => {
+            const dbCats = await getCategoriesAPI();
+            setCustomCategories(dbCats);
+            // Merge fixed + custom (names only for UI)
+            const names = dbCats.map(c => c.name);
+            setCategories(['All', 'Free', 'Paid', ...names]);
+        };
+        fetchCategories();
+
         const settings = getSettings();
         setLogo(settings.logo || '');
         setWhatsappNumber(settings.whatsappNumber || WHATSAPP_NUMBER);
         setWhatsappGroup(settings.whatsappGroup || '');
         setCategoryButtons(getCategoryButtons());
     }, []);
-
-    // NOTE: removed auto-save effect for books since we now save directly to API
 
     const addBook = async (book) => {
         try {
@@ -75,9 +87,7 @@ export const BookProvider = ({ children }) => {
     };
 
     const reorderBooks = (newOrder) => {
-        // Optimistic update for UI
         setBooks(newOrder);
-        // reorderBooksAPI(newOrder); // Not fully implemented in DB yet
     };
 
     const updateLogo = (newLogo) => {
@@ -102,6 +112,29 @@ export const BookProvider = ({ children }) => {
         const updated = { ...categoryButtons, [category]: data };
         setCategoryButtons(updated);
         saveCategoryButtons(updated);
+    };
+
+    // Category Management
+    const addCategory = async (name) => {
+        if (categories.includes(name)) return;
+        try {
+            const newCat = await addCategoryAPI(name);
+            setCustomCategories(prev => [...prev, newCat]);
+            setCategories(prev => [...prev, name]);
+        } catch (e) {
+            console.error("Failed to add category", e);
+        }
+    };
+
+    const deleteCategory = async (id, name) => {
+        try {
+            await deleteCategoryAPI(id);
+            setCustomCategories(prev => prev.filter(c => c.id !== id));
+            setCategories(prev => prev.filter(c => c !== name));
+            if (activeCategory === name) setActiveCategory('All');
+        } catch (e) {
+            console.error("Failed to delete category", e);
+        }
     };
 
     const login = (username, password) => {
@@ -132,6 +165,7 @@ export const BookProvider = ({ children }) => {
             whatsappGroup, updateWhatsappGroup,
             categoryButtons, updateCategoryButton,
             activeCategory, setActiveCategory,
+            categories, customCategories, addCategory, deleteCategory, // Exposed
             resetToDefaults
         }}>
             {children}

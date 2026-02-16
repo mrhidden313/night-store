@@ -85,6 +85,43 @@ export const reorderBooksAPI = async (books) => {
     return books;
 };
 
+// ===== CATEGORIES =====
+
+export const getCategoriesAPI = async () => {
+    try {
+        const q = query(collection(db, 'categories'));
+        const querySnapshot = await getDocs(q);
+        const cats = [];
+        querySnapshot.forEach((doc) => {
+            cats.push({ id: doc.id, ...doc.data() });
+        });
+        return cats;
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        return [];
+    }
+};
+
+export const addCategoryAPI = async (name) => {
+    try {
+        const docRef = await addDoc(collection(db, 'categories'), { name });
+        return { id: docRef.id, name };
+    } catch (error) {
+        console.error("Error adding category:", error);
+        throw error;
+    }
+};
+
+export const deleteCategoryAPI = async (id) => {
+    try {
+        await deleteDoc(doc(db, 'categories', id));
+        return id;
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        throw error;
+    }
+};
+
 // ===== SETTINGS & BUTTONS (Keep LocalStorage for simplicity for now) =====
 
 export const getSettings = () => {

@@ -91,36 +91,21 @@ const BookCard = ({ book, index = 0 }) => {
                 <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {/* Price Removed as per request */}
 
-                    {book.type === 'paid' ? (
-                        <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="btn whatsapp-btn" style={{
-                            width: '100%',
-                            padding: '0.7rem',
-                            justifyContent: 'center',
-                            fontSize: '0.95rem',
-                            borderRadius: '10px',
-                            fontWeight: '600',
-                            marginTop: '0',
-                            boxShadow: '0 4px 15px rgba(37, 211, 102, 0.3)'
-                        }}>
-                            Claim Deal
-                        </a>
-                    ) : (
-                        <Link to={`/product/${book.id}`} className="btn" style={{
-                            width: '100%',
-                            padding: '0.7rem',
-                            justifyContent: 'center',
-                            fontSize: '0.95rem',
-                            background: 'linear-gradient(45deg, var(--primary), var(--secondary))',
-                            border: 'none',
-                            borderRadius: '10px',
-                            color: 'white',
-                            fontWeight: '600',
-                            marginTop: '0',
-                            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)'
-                        }}>
-                            Read More <ArrowRight size={18} />
-                        </Link>
-                    )}
+                    <Link to={`/product/${book.id}`} className="btn" style={{
+                        width: '100%',
+                        padding: '0.7rem',
+                        justifyContent: 'center',
+                        fontSize: '0.95rem',
+                        background: 'linear-gradient(45deg, var(--primary), var(--secondary))',
+                        border: 'none',
+                        borderRadius: '10px',
+                        color: 'white',
+                        fontWeight: '600',
+                        marginTop: '0',
+                        boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)'
+                    }}>
+                        Read More <ArrowRight size={18} />
+                    </Link>
                 </div>
             </div>
         </motion.div>
