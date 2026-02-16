@@ -6,24 +6,21 @@ import { Lock, User, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 const AdminLogin = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
-    const { login, lockoutTime } = useContext(BookContext);
+    const { login } = useContext(BookContext);
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        const result = login(username, password);
+        const result = await login(email, password);
 
         if (result.success) {
             toast.success('Successfully logged in!');
             navigate('/admin');
-        } else if (result.locked) {
-            const wait = Math.ceil((lockoutTime - Date.now()) / 1000);
-            toast.error(`Account locked. Please wait ${wait}s.`);
         } else {
-            toast.error('Invalid credentials. Access denied.');
+            toast.error(result.error || 'Invalid credentials. Access denied.');
         }
     };
 
@@ -47,10 +44,10 @@ const AdminLogin = () => {
                     <div style={{ position: 'relative' }}>
                         <User style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={18} />
                         <input
-                            type="text"
-                            placeholder="Username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            type="email"
+                            placeholder="Email Address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             style={inputStyle}
                             required
                         />

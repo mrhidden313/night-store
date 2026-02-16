@@ -15,7 +15,12 @@ const About = lazy(() => import('./pages/About'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const ProtectedRoute = ({ children }) => {
-    const { isAdmin } = useContext(BookContext);
+    const { isAdmin, authLoading } = useContext(BookContext);
+
+    if (authLoading) {
+        return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>Verifying Session...</div>;
+    }
+
     return isAdmin ? children : <Navigate to="/admin-login" />;
 };
 

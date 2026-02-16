@@ -41,7 +41,7 @@ const SortableBook = ({ book, onDelete, onEdit }) => {
 const AdminDashboard = () => {
     const { books, addBook, updateBook, deleteBook, logo, updateLogo, reorderBooks, whatsappNumber, updateWhatsappNumber, whatsappGroup, updateWhatsappGroup, categoryButtons, updateCategoryButton, resetToDefaults, categories, customCategories, addCategory, deleteCategory } = useContext(BookContext);
     const [formData, setFormData] = useState({
-        title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: ''
+        title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: ''
     });
     const [editingId, setEditingId] = useState(null);
     const [codeView, setCodeView] = useState(false);
@@ -52,6 +52,17 @@ const AdminDashboard = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [newCatName, setNewCatName] = useState('');
+    const [btnBuilder, setBtnBuilder] = useState({ text: 'Click Here', link: 'https://', color: '#16a34a' });
+
+    const insertCustomButton = () => {
+        if (!codeView) {
+            setCodeView(true);
+            toast.info('Switched to Code View to preserve style!');
+        }
+        const btnHtml = `<a href="${btnBuilder.link}" target="_blank" class="btn" style="background: ${btnBuilder.color}; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px ${btnBuilder.color}66; margin: 5px 0; display: inline-block; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold;">${btnBuilder.text}</a>&nbsp;`;
+        setFormData(prev => ({ ...prev, content: prev.content + btnHtml }));
+        toast.success('Button inserted into content!');
+    };
 
     const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
@@ -90,7 +101,7 @@ const AdminDashboard = () => {
 
     const cancelEdit = () => {
         setEditingId(null);
-        setFormData({ title: '', excerpt: '', content: '', image: '', category: CATEGORIES[1], tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '' });
+        setFormData({ title: '', excerpt: '', content: '', image: '', category: CATEGORIES[1], tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: '' });
         toast.info('Edit cancelled');
     };
 
@@ -133,7 +144,7 @@ const AdminDashboard = () => {
                 }, 500);
             }
             // Reset form
-            setFormData({ title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '' });
+            setFormData({ title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: '' });
         } catch (error) {
             clearInterval(progressInterval);
             setUploading(false);
@@ -244,8 +255,10 @@ const AdminDashboard = () => {
                             <input placeholder="Tags (e.g. vpn, software)" value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} style={inputStyle} />
                         </div>
 
-                        {formData.type === 'paid' && (
+                        {formData.type === 'paid' ? (
                             <input placeholder="Price (e.g. Rs. 500)" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} style={{ ...inputStyle, borderColor: 'rgba(251,191,36,0.3)' }} />
+                        ) : (
+                            <input placeholder="Download URL (Drive/Dropbox link)" value={formData.downloadUrl} onChange={e => setFormData({ ...formData, downloadUrl: e.target.value })} style={{ ...inputStyle, borderColor: 'var(--primary)' }} />
                         )}
 
                         {/* WhatsApp Text */}
@@ -254,6 +267,33 @@ const AdminDashboard = () => {
                                 <MessageCircle size={12} /> WhatsApp Message
                             </label>
                             <input placeholder='e.g. I want to buy this deal' value={formData.whatsappText} onChange={e => setFormData({ ...formData, whatsappText: e.target.value })} style={{ ...inputStyle, background: 'rgba(255,255,255,0.03)' }} />
+                        </div>
+
+                        {/* Button Generator */}
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '10px', marginBottom: '1rem', border: '1px solid var(--glass-border)' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                                <Settings size={14} /> Button Generator (Insert into Content)
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end' }}>
+                                <div>
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Text</span>
+                                    <input value={btnBuilder.text} onChange={e => setBtnBuilder({ ...btnBuilder, text: e.target.value })} style={inputStyle} />
+                                </div>
+                                <div>
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Link / Href</span>
+                                    <input value={btnBuilder.link} onChange={e => setBtnBuilder({ ...btnBuilder, link: e.target.value })} style={inputStyle} />
+                                </div>
+                                <div>
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Color</span>
+                                    <div style={{ display: 'flex', gap: '5px' }}>
+                                        <input type="color" value={btnBuilder.color} onChange={e => setBtnBuilder({ ...btnBuilder, color: e.target.value })} style={{ height: '35px', width: '40px', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }} />
+                                        <input value={btnBuilder.color} onChange={e => setBtnBuilder({ ...btnBuilder, color: e.target.value })} style={{ ...inputStyle, width: '100%' }} />
+                                    </div>
+                                </div>
+                                <button type="button" onClick={insertCustomButton} className="btn" style={{ background: 'var(--primary)', color: 'white', height: '38px', fontSize: '0.8rem' }}>
+                                    + Insert
+                                </button>
+                            </div>
                         </div>
 
                         {/* Editor Toggle */}

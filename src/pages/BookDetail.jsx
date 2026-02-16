@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useContext, useState, useEffect } from 'react';
 import { BookContext } from '../context/BookContext';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Calendar, Tag, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Tag } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import SEO from '../components/SEO';
 import BookCard from '../components/BookCard';
@@ -60,7 +60,7 @@ const BookDetail = () => {
                 <div
                     className="blog-content"
                     style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#e2e8f0', lineHeight: '1.8' }}
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(book.content) }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(book.content, { ADD_ATTR: ['target', 'class', 'style'] }) }}
                 />
 
                 {/* Action Area */}
@@ -88,6 +88,24 @@ const BookDetail = () => {
                             <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
                                 Join our community to get this instantly!
                             </p>
+
+                            {book.downloadUrl && (
+                                <a
+                                    href={book.downloadUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn"
+                                    style={{
+                                        width: '100%', maxWidth: '300px', margin: '0 auto 1rem',
+                                        justifyContent: 'center', padding: '0.8rem 2rem',
+                                        fontSize: '1rem', background: 'var(--primary)',
+                                        color: 'white', boxShadow: '0 0 20px rgba(22, 163, 74, 0.3)'
+                                    }}
+                                >
+                                    Download Content
+                                </a>
+                            )}
+
                             <a
                                 href={whatsappGroup || '#'}
                                 target="_blank"
@@ -95,7 +113,7 @@ const BookDetail = () => {
                                 className="btn whatsapp-btn"
                                 style={{ padding: '0.8rem 2rem', fontSize: '1rem', width: '100%', maxWidth: '300px', justifyContent: 'center' }}
                             >
-                                <MessageCircle size={20} /> Join WhatsApp Group
+                                Join WhatsApp Group
                             </a>
                         </>
                     )}

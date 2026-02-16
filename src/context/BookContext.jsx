@@ -5,6 +5,8 @@ import {
     getCategoryButtons, saveCategoryButtons, resetToDefaults,
     getCategoriesAPI, addCategoryAPI, deleteCategoryAPI
 } from '../services/api';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'; // Direct import from SDK
+import { auth } from '../services/firebase'; // Import initialized auth instance
 
 export const BookContext = createContext();
 
@@ -21,8 +23,8 @@ export const BookProvider = ({ children }) => {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [loginAttempts, setLoginAttempts] = useState(0);
-    const [lockoutTime, setLockoutTime] = useState(0);
+    const [authLoading, setAuthLoading] = useState(true);
+
     const [logo, setLogo] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState(WHATSAPP_NUMBER);
     const [whatsappGroup, setWhatsappGroup] = useState('');
@@ -137,29 +139,39 @@ export const BookProvider = ({ children }) => {
         }
     };
 
-    const login = (username, password) => {
-        if (Date.now() < lockoutTime) return { success: false, locked: true };
 
-        if (username === 'fkkhan' && password === 'farman') {
-            setIsAdmin(true);
-            setLoginAttempts(0);
+    // Auth Listener
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setIsAdmin(!!user);
+            setAuthLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const login = async (email, password) => {
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
             return { success: true };
-        } else {
-            const newAttempts = loginAttempts + 1;
-            setLoginAttempts(newAttempts);
-            if (newAttempts >= 5) {
-                setLockoutTime(Date.now() + 5 * 60 * 1000);
-            }
-            return { success: false, locked: false };
+        } catch (error) {
+            console.error("Login failed", error);
+            return { success: false, error: error.message };
         }
     };
 
-    const logout = () => setIsAdmin(false);
+    const logout = async () => {
+        try {
+            await signOut(auth);
+            setIsAdmin(false);
+        } catch (error) {
+            console.error("Logout failed", error);
+        }
+    };
 
     return (
         <BookContext.Provider value={{
             books, loading, addBook, updateBook, deleteBook, reorderBooks,
-            isAdmin, login, logout, lockoutTime,
+            isAdmin, authLoading, login, logout,
             logo, updateLogo,
             whatsappNumber, updateWhatsappNumber,
             whatsappGroup, updateWhatsappGroup,

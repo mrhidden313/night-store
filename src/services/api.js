@@ -127,9 +127,9 @@ export const deleteCategoryAPI = async (id) => {
 export const getSettings = () => {
     try {
         const data = localStorage.getItem(SETTINGS_KEY);
-        return data ? JSON.parse(data) : { logo: '/logo.png', whatsappNumber: '03709283496' };
+        return data ? JSON.parse(data) : { logo: '/logo.png', whatsappNumber: '923709283496' };
     } catch {
-        return { logo: '/logo.png', whatsappNumber: '03709283496' };
+        return { logo: '/logo.png', whatsappNumber: '923709283496' };
     }
 };
 
