@@ -89,7 +89,11 @@ const BookCard = ({ book, index = 0 }) => {
                 </p>
 
                 <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {/* Price Removed as per request */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: '700', color: book.type === 'paid' ? 'var(--accent-gold)' : 'var(--secondary)' }}>
+                            {book.type === 'free' ? 'Free' : (book.price || 'Ask Price')}
+                        </span>
+                    </div>
 
                     <Link to={`/product/${book.id}`} className="btn" style={{
                         width: '100%',

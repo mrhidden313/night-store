@@ -3,7 +3,9 @@ import {
     getBooks, addBookAPI, updateBookAPI, deleteBookAPI, reorderBooksAPI,
     getSettings, saveSettings,
     getCategoryButtons, saveCategoryButtons, resetToDefaults,
-    getCategoriesAPI, addCategoryAPI, deleteCategoryAPI
+    getCategoryButtons, saveCategoryButtons, resetToDefaults,
+    getCategoriesAPI, addCategoryAPI, deleteCategoryAPI,
+    getTrashAPI, moveToTrashAPI, restoreBookAPI, permanentDeleteBookAPI, emptyTrashAPI
 } from '../services/api';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'; // Direct import from SDK
 import { auth } from '../services/firebase'; // Import initialized auth instance
@@ -21,6 +23,7 @@ export const WHATSAPP_NUMBER = '923709283496';
 
 export const BookProvider = ({ children }) => {
     const [books, setBooks] = useState([]);
+    const [trash, setTrash] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
@@ -50,9 +53,16 @@ export const BookProvider = ({ children }) => {
             setCustomCategories(dbCats);
             // Merge fixed + custom (names only for UI)
             const names = dbCats.map(c => c.name);
+            // We still keep 'categories' flat for legacy support if needed, or just for the dropdown basics
             setCategories(['All', 'Free', 'Paid', ...names]);
         };
         fetchCategories();
+
+        const fetchTrash = async () => {
+            const trashData = await getTrashAPI();
+            setTrash(trashData);
+        };
+        fetchTrash();
 
         const settings = getSettings();
         setLogo(settings.logo || '');
@@ -81,10 +91,45 @@ export const BookProvider = ({ children }) => {
 
     const deleteBook = async (id) => {
         try {
-            await deleteBookAPI(id);
-            setBooks(prev => prev.filter(b => b.id !== id));
+            const bookToDelete = books.find(b => b.id === id);
+            if (bookToDelete) {
+                await moveToTrashAPI(bookToDelete);
+                setBooks(prev => prev.filter(b => b.id !== id));
+                setTrash(prev => [bookToDelete, ...prev]);
+            }
         } catch (e) {
-            console.error("Failed to delete book", e);
+            console.error("Failed to move book to trash", e);
+        }
+    };
+
+    const restoreBook = async (id) => {
+        try {
+            const bookToRestore = trash.find(b => b.id === id);
+            if (bookToRestore) {
+                await restoreBookAPI(bookToRestore);
+                setTrash(prev => prev.filter(b => b.id !== id));
+                setBooks(prev => [bookToRestore, ...prev]);
+            }
+        } catch (e) {
+            console.error("Failed to restore book", e);
+        }
+    };
+
+    const permanentDeleteBook = async (id) => {
+        try {
+            await permanentDeleteBookAPI(id);
+            setTrash(prev => prev.filter(b => b.id !== id));
+        } catch (e) {
+            console.error("Failed to permanently delete book", e);
+        }
+    };
+
+    const emptyTrash = async () => {
+        try {
+            await emptyTrashAPI();
+            setTrash([]);
+        } catch (e) {
+            console.error("Failed to empty trash", e);
         }
     };
 
@@ -117,10 +162,10 @@ export const BookProvider = ({ children }) => {
     };
 
     // Category Management
-    const addCategory = async (name) => {
+    const addCategory = async (name, parent = null) => {
         if (categories.includes(name)) return;
         try {
-            const newCat = await addCategoryAPI(name);
+            const newCat = await addCategoryAPI(name, parent);
             setCustomCategories(prev => [...prev, newCat]);
             setCategories(prev => [...prev, name]);
         } catch (e) {
@@ -170,7 +215,8 @@ export const BookProvider = ({ children }) => {
 
     return (
         <BookContext.Provider value={{
-            books, loading, addBook, updateBook, deleteBook, reorderBooks,
+            books, trash, loading, addBook, updateBook, deleteBook, reorderBooks,
+            restoreBook, permanentDeleteBook, emptyTrash,
             isAdmin, authLoading, login, logout,
             logo, updateLogo,
             whatsappNumber, updateWhatsappNumber,

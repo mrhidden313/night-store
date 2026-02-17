@@ -10,8 +10,9 @@ import SEO from '../components/SEO';
 import Loader from '../components/Loader';
 
 const Home = () => {
-    const { books, activeCategory, categoryButtons, loading } = useContext(BookContext);
+    const { books, activeCategory, setActiveCategory, categoryButtons, loading, customCategories } = useContext(BookContext);
     const [search, setSearch] = useState('');
+    const [expandedParents, setExpandedParents] = useState({}); // Toggles for sidebar accordions
 
     // 2-hour countdown timer (loops)
     const [timeLeft, setTimeLeft] = useState(2 * 60 * 60 * 1000); // 2 hours in ms
@@ -34,12 +35,27 @@ const Home = () => {
     // If loading, show Loader inside the grid area, not full screen
     // if (loading) return <Loader fullScreen={false} />; 
 
-    const filteredBooks = books
-        .filter(book =>
-            (activeCategory === 'All' || book.category === activeCategory) &&
-            (book.title.toLowerCase().includes(search.toLowerCase()) ||
-                book.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase())))
-        );
+    // Filter Logic with Subcategories
+    const filteredBooks = books.filter(book => {
+        // 1. Search Filter
+        const matchesSearch = book.title.toLowerCase().includes(search.toLowerCase()) ||
+            book.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
+
+        if (!matchesSearch) return false;
+
+        // 2. Category Filter
+        if (activeCategory === 'All') return true;
+
+        // Check if book matches active category
+        if (book.category === activeCategory) return true;
+
+        // Check if active category is a Parent, and book belongs to one of its children
+        // Find all subcategories of activeCategory
+        const subCats = customCategories.filter(c => c.parent === activeCategory).map(c => c.name);
+        if (subCats.includes(book.category)) return true;
+
+        return false;
+    });
 
     const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('I want to buy a product')}`;
 
@@ -206,6 +222,97 @@ const Home = () => {
                 {/* Sidebar */}
                 <aside style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                     <TrustWidget />
+                    <h4 style={{ marginBottom: '0.5rem', fontSize: '0.95rem' }}>Categories</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                        {['All', 'Free', 'Paid'].map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className="btn"
+                                style={{
+                                    justifyContent: 'flex-start',
+                                    background: activeCategory === cat ? 'var(--primary)' : 'transparent',
+                                    border: '1px solid transparent',
+                                    color: activeCategory === cat ? 'white' : 'var(--text-muted)',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+
+                        <div style={{ margin: '0.5rem 0', borderTop: '1px solid var(--glass-border)' }}></div>
+
+                        {/* Dynamic Categories (Parents & Children) */}
+                        {(() => {
+                            // Get Top Level Categories (No Parent)
+                            const parents = customCategories.filter(c => !c.parent).map(c => c.name);
+
+                            return parents.map(parent => {
+                                const children = customCategories.filter(c => c.parent === parent);
+                                const isOpen = expandedParents[parent] || activeCategory === parent || children.some(c => c.name === activeCategory);
+
+                                return (
+                                    <div key={parent}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <button
+                                                onClick={() => setActiveCategory(parent)}
+                                                className="btn"
+                                                style={{
+                                                    justifyContent: 'flex-start',
+                                                    flex: 1,
+                                                    background: activeCategory === parent ? 'rgba(34, 197, 94, 0.2)' : 'transparent',
+                                                    color: activeCategory === parent ? 'var(--primary)' : 'white',
+                                                    fontSize: '0.85rem',
+                                                    paddingLeft: '0'
+                                                }}
+                                            >
+                                                {parent}
+                                            </button>
+                                            {children.length > 0 && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setExpandedParents(p => ({ ...p, [parent]: !p[parent] })); }}
+                                                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0 5px' }}
+                                                >
+                                                    {isOpen ? '−' : '+'}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <AnimatePresence>
+                                            {isOpen && children.length > 0 && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    style={{ overflow: 'hidden', paddingLeft: '0.8rem', display: 'flex', flexDirection: 'column', borderLeft: '1px solid var(--glass-border)', marginLeft: '5px' }}
+                                                >
+                                                    {children.map(child => (
+                                                        <button
+                                                            key={child.id}
+                                                            onClick={() => setActiveCategory(child.name)}
+                                                            style={{
+                                                                background: 'transparent',
+                                                                border: 'none',
+                                                                textAlign: 'left',
+                                                                padding: '0.4rem 0.5rem',
+                                                                color: activeCategory === child.name ? 'var(--accent-gold)' : 'var(--text-muted)',
+                                                                cursor: 'pointer',
+                                                                fontSize: '0.8rem'
+                                                            }}
+                                                        >
+                                                            {child.name}
+                                                        </button>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                );
+                            });
+                        })()}
+                    </div>
+
                     <div className="glass-panel" style={{ padding: '1.2rem', borderRadius: '10px' }}>
                         <h4 style={{ marginBottom: '0.5rem', fontSize: '0.95rem' }}>Need Help?</h4>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
@@ -216,8 +323,8 @@ const Home = () => {
                         </a>
                     </div>
                 </aside>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

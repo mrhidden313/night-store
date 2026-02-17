@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { BookContext, CATEGORIES, WHATSAPP_NUMBER } from '../context/BookContext';
-import { Trash2, PlusCircle, Layout, GripVertical, Code, Eye, Image as ImageIcon, Phone, MessageCircle, Settings, RotateCcw, Pencil, Package, Tag } from 'lucide-react';
+import { Trash2, PlusCircle, Layout, GripVertical, Code, Eye, Image as ImageIcon, Phone, MessageCircle, Settings, RotateCcw, Pencil, Package, Tag, RefreshCw, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
@@ -39,7 +39,7 @@ const SortableBook = ({ book, onDelete, onEdit }) => {
 };
 
 const AdminDashboard = () => {
-    const { books, addBook, updateBook, deleteBook, logo, updateLogo, reorderBooks, whatsappNumber, updateWhatsappNumber, whatsappGroup, updateWhatsappGroup, categoryButtons, updateCategoryButton, resetToDefaults, categories, customCategories, addCategory, deleteCategory } = useContext(BookContext);
+    const { books, trash, addBook, updateBook, deleteBook, restoreBook, permanentDeleteBook, emptyTrash, logo, updateLogo, reorderBooks, whatsappNumber, updateWhatsappNumber, whatsappGroup, updateWhatsappGroup, categoryButtons, updateCategoryButton, resetToDefaults, categories, customCategories, addCategory, deleteCategory } = useContext(BookContext);
     const [formData, setFormData] = useState({
         title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: ''
     });
@@ -52,6 +52,7 @@ const AdminDashboard = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [newCatName, setNewCatName] = useState('');
+    const [selectedParent, setSelectedParent] = useState('');
     const [btnBuilder, setBtnBuilder] = useState({ text: 'Click Here', link: 'https://', color: '#16a34a' });
 
     const insertCustomButton = () => {
@@ -192,6 +193,13 @@ const AdminDashboard = () => {
                     color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'settings' ? '600' : '400'
                 }}>
                     <Settings size={18} /> Settings
+                </button>
+                <button onClick={() => setActiveTab('trash')} className={`tab-btn ${activeTab === 'trash' ? 'active' : ''}`} style={{
+                    padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
+                    background: activeTab === 'trash' ? '#ef4444' : 'rgba(255,255,255,0.03)',
+                    color: 'white', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: activeTab === 'trash' ? '600' : '400'
+                }}>
+                    <Trash2 size={18} /> Trash ({trash.length})
                 </button>
             </div>
 
@@ -363,26 +371,39 @@ const AdminDashboard = () => {
                     {/* ADD NEW CATEGORY */}
                     <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
                         <h2 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>Manage Categories</h2>
-                        <div style={{ display: 'flex', gap: '0.4rem' }}>
-                            <input
-                                placeholder="New Category Name (e.g. VPNs)"
-                                value={newCatName}
-                                onChange={e => setNewCatName(e.target.value)}
-                                style={{ ...inputStyle, flex: 1 }}
-                            />
-                            <button
-                                onClick={() => {
-                                    if (newCatName.trim()) {
-                                        addCategory(newCatName.trim());
-                                        setNewCatName('');
-                                        toast.success('Category added');
-                                    }
-                                }}
-                                className="btn btn-primary"
-                                style={{ padding: '0.5rem 1rem' }}
+                        <div style={{ display: 'flex', gap: '0.4rem', flexDirection: 'column' }}>
+                            <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <input
+                                    placeholder="New Category Name (e.g. Antivirus)"
+                                    value={newCatName}
+                                    onChange={e => setNewCatName(e.target.value)}
+                                    style={{ ...inputStyle, flex: 1 }}
+                                />
+                                <button
+                                    onClick={() => {
+                                        if (newCatName.trim()) {
+                                            addCategory(newCatName.trim(), selectedParent || null);
+                                            setNewCatName('');
+                                            setSelectedParent('');
+                                            toast.success('Category added');
+                                        }
+                                    }}
+                                    className="btn btn-primary"
+                                    style={{ padding: '0.5rem 1rem' }}
+                                >
+                                    <PlusCircle size={18} /> Add
+                                </button>
+                            </div>
+                            <select
+                                value={selectedParent}
+                                onChange={e => setSelectedParent(e.target.value)}
+                                style={{ ...inputStyle, width: '100%', cursor: 'pointer', color: 'var(--text-muted)' }}
                             >
-                                <PlusCircle size={18} /> Add
-                            </button>
+                                <option value="">No Parent (Top Level)</option>
+                                {categories.filter(c => !['All', 'Free', 'Paid'].includes(c)).map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -395,7 +416,14 @@ const AdminDashboard = () => {
                             return (
                                 <div key={cat} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '12px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                                        <h4 style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>{cat} <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>({countByCategory(cat)} items)</span></h4>
+                                        <h4 style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>
+                                            {cat}
+                                            {(() => {
+                                                const catObj = customCategories.find(c => c.name === cat);
+                                                return catObj?.parent ? <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 'normal' }}> (in {catObj.parent})</span> : null;
+                                            })()}
+                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}> ({countByCategory(cat)} items)</span>
+                                        </h4>
 
                                         {!isFixed && (
                                             <button
@@ -457,6 +485,77 @@ const AdminDashboard = () => {
                                 </>
                             );
                         })()}
+                    </div>
+                </div>
+            )}
+
+            {/* TRASH TAB */}
+            {activeTab === 'trash' && (
+                <div className="glass-panel" style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderRadius: '18px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h2 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444' }}>
+                            <Trash2 size={20} /> Trash ({trash.length})
+                        </h2>
+                        {trash.length > 0 && (
+                            <button
+                                onClick={() => {
+                                    if (window.confirm("Are you sure? This will delete ALL items in the trash PERMANENTLY.")) {
+                                        emptyTrash();
+                                        toast.success("Trash emptied");
+                                    }
+                                }}
+                                className="btn"
+                                style={{ background: '#ef4444', color: 'white', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                            >
+                                Empty Trash
+                            </button>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        {trash.map(item => (
+                            <div key={item.id} style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid var(--glass-border)',
+                                padding: '0.8rem',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{item.title}</h4>
+                                    <span style={{ fontSize: '0.7rem', color: '#ef4444' }}>Deleted</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button
+                                        onClick={() => {
+                                            restoreBook(item.id);
+                                            toast.success("Restored successfully");
+                                        }}
+                                        className="btn"
+                                        title="Restore"
+                                        style={{ background: 'var(--primary)', color: 'white', padding: '0.4rem', borderRadius: '6px' }}
+                                    >
+                                        <RefreshCw size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm("Delete permanently? This cannot be undone.")) {
+                                                permanentDeleteBook(item.id);
+                                                toast.success("Deleted permanently");
+                                            }
+                                        }}
+                                        className="btn"
+                                        title="Delete Forever"
+                                        style={{ background: '#ef4444', color: 'white', padding: '0.4rem', borderRadius: '6px' }}
+                                    >
+                                        <XCircle size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {trash.length === 0 && <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Trash is empty.</p>}
                     </div>
                 </div>
             )}
