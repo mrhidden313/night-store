@@ -2,6 +2,7 @@ import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orde
 import { setDoc, getDoc, where } from 'firebase/firestore';
 
 const COLLECTION_NAME = 'products';
+const CATEGORIES_COLLECTION = 'categories';
 const SETTINGS_KEY = 'nightstore_settings'; // Keep settings local for now or move to DB later
 const BUTTONS_KEY = 'nightstore_buttons';
 
@@ -115,7 +116,7 @@ export const addCategoryAPI = async (name, parent = null) => {
 
 export const updateCategoryAPI = async (id, newName) => {
     try {
-        await updateDoc(doc(db, CATEGORIES_COLLECTION, id), { name: newName });
+        await updateDoc(doc(db, 'categories', id), { name: newName });
         return { id, name: newName };
     } catch (error) {
         console.error("Error updating category:", error);
@@ -126,13 +127,13 @@ export const updateCategoryAPI = async (id, newName) => {
 // Modified: Returns the ID and Name for context to handle cascade
 export const deleteCategoryAPI = async (id) => {
     try {
-        const catDoc = await getDoc(doc(db, CATEGORIES_COLLECTION, id));
+        const catDoc = await getDoc(doc(db, 'categories', id));
         if (catDoc.exists()) {
             const catData = { id: catDoc.id, ...catDoc.data(), type: 'category', deletedAt: new Date().toISOString() };
             // Move to Trash
             await setDoc(doc(db, TRASH_COLLECTION, id), catData);
             // Delete from Categories
-            await deleteDoc(doc(db, CATEGORIES_COLLECTION, id));
+            await deleteDoc(doc(db, 'categories', id));
             return catData; // Return data to know what was deleted (name is needed for cascading books)
         }
         return null;
@@ -180,7 +181,7 @@ export const restoreBookAPI = async (item) => {
         const { id, ...data } = item;
         const { deletedAt, type, ...rest } = data; // Remove trash metadata
 
-        const targetCollection = (type === 'category') ? CATEGORIES_COLLECTION : COLLECTION_NAME;
+        const targetCollection = (type === 'category') ? 'categories' : COLLECTION_NAME;
 
         // 1. Add back to original collection
         await setDoc(doc(db, targetCollection, id), rest);
