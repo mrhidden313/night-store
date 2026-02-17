@@ -1,4 +1,5 @@
-import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, getDoc, where } from './firebase';
+import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from './firebase';
+import { setDoc, getDoc, where } from 'firebase/firestore';
 
 const COLLECTION_NAME = 'products';
 const SETTINGS_KEY = 'nightstore_settings'; // Keep settings local for now or move to DB later
