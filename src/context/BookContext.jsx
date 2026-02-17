@@ -3,7 +3,7 @@ import {
     getBooks, addBookAPI, updateBookAPI, deleteBookAPI, reorderBooksAPI,
     getSettings, saveSettings,
     getCategoryButtons, saveCategoryButtons, resetToDefaults,
-    getCategoryButtons, saveCategoryButtons, resetToDefaults,
+
     getCategoriesAPI, addCategoryAPI, deleteCategoryAPI, updateCategoryAPI,
     getTrashAPI, moveToTrashAPI, restoreBookAPI, permanentDeleteBookAPI, emptyTrashAPI
 } from '../services/api';
@@ -268,8 +268,7 @@ export const BookProvider = ({ children }) => {
             whatsappGroup, updateWhatsappGroup,
             categoryButtons, updateCategoryButton,
             activeCategory, setActiveCategory,
-            categoryButtons, updateCategoryButton,
-            activeCategory, setActiveCategory,
+
             categories, customCategories, addCategory, deleteCategory, updateCategory,
             resetToDefaults
         }}>
