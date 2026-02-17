@@ -199,20 +199,27 @@ export const BookProvider = ({ children }) => {
 
     const deleteCategory = async (id, name) => {
         try {
+            console.log(`Attempting to delete category: ${name} (${id})`);
+
             // 1. Move Category to Trash (API handles the move)
             const deletedCat = await deleteCategoryAPI(id);
+
+            if (!deletedCat) {
+                console.error("API returned null for deleted category");
+                return;
+            }
 
             // 2. Update Local Category State
             setCustomCategories(prev => prev.filter(c => c.id !== id));
             setCategories(prev => prev.filter(c => c !== name));
             if (activeCategory === name) setActiveCategory('All');
 
-            if (deletedCat) {
-                setTrash(prev => [{ ...deletedCat, title: `Category: ${deletedCat.name}` }, ...prev]); // Add cat to trash state
-            }
+            setTrash(prev => [{ ...deletedCat, title: `Category: ${deletedCat.name}` }, ...prev]); // Add cat to trash state
 
             // 3. Cascade: Move all products of this category to Trash
             const booksToDelete = books.filter(b => b.category === name);
+            console.log(`Cascade deleting ${booksToDelete.length} products in category ${name}`);
+
             if (booksToDelete.length > 0) {
                 const deletePromises = booksToDelete.map(b => moveToTrashAPI(b));
                 await Promise.all(deletePromises);

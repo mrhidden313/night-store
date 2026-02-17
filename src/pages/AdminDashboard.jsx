@@ -54,7 +54,7 @@ const AdminDashboard = () => {
     const [newCatName, setNewCatName] = useState('');
     const [editingCatId, setEditingCatId] = useState(null);
     const [editCatName, setEditCatName] = useState('');
-    const [selectedParent, setSelectedParent] = useState('');
+
     const [btnBuilder, setBtnBuilder] = useState({ text: 'Offer Link', link: 'https://', color: '#16a34a' });
 
     const insertCustomButton = () => {
@@ -384,9 +384,8 @@ const AdminDashboard = () => {
                                 <button
                                     onClick={() => {
                                         if (newCatName.trim()) {
-                                            addCategory(newCatName.trim(), selectedParent || null);
+                                            addCategory(newCatName.trim());
                                             setNewCatName('');
-                                            setSelectedParent('');
                                             toast.success('Category added');
                                         }
                                     }}
@@ -396,16 +395,7 @@ const AdminDashboard = () => {
                                     <PlusCircle size={18} /> Add
                                 </button>
                             </div>
-                            <select
-                                value={selectedParent}
-                                onChange={e => setSelectedParent(e.target.value)}
-                                style={{ ...inputStyle, width: '100%', cursor: 'pointer', color: 'var(--text-muted)' }}
-                            >
-                                <option value="">No Parent (Top Level)</option>
-                                {categories.filter(c => !['All', 'Free', 'Paid'].includes(c)).map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
+
                         </div>
                     </div>
 
@@ -448,10 +438,7 @@ const AdminDashboard = () => {
                                         ) : (
                                             <h4 style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>
                                                 {cat}
-                                                {(() => {
-                                                    const catObj = customCategories.find(c => c.name === cat);
-                                                    return catObj?.parent ? <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 'normal' }}> (in {catObj.parent})</span> : null;
-                                                })()}
+
                                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}> ({countByCategory(cat)} items)</span>
                                             </h4>
                                         )}
