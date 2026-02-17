@@ -51,6 +51,7 @@ function App() {
             </div>
         </Router>
     );
+    // Version 1.2 - Trash Feature Added
 }
 
 export default App;
