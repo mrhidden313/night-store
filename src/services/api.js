@@ -1,4 +1,4 @@
-import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc } from './firebase';
+import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, setDoc, getDoc, where } from './firebase';
 
 const COLLECTION_NAME = 'products';
 const SETTINGS_KEY = 'nightstore_settings'; // Keep settings local for now or move to DB later
@@ -112,10 +112,29 @@ export const addCategoryAPI = async (name, parent = null) => {
     }
 };
 
+export const updateCategoryAPI = async (id, newName) => {
+    try {
+        await updateDoc(doc(db, CATEGORIES_COLLECTION, id), { name: newName });
+        return { id, name: newName };
+    } catch (error) {
+        console.error("Error updating category:", error);
+        throw error;
+    }
+};
+
+// Modified: Returns the ID and Name for context to handle cascade
 export const deleteCategoryAPI = async (id) => {
     try {
-        await deleteDoc(doc(db, 'categories', id));
-        return id;
+        const catDoc = await getDoc(doc(db, CATEGORIES_COLLECTION, id));
+        if (catDoc.exists()) {
+            const catData = { id: catDoc.id, ...catDoc.data(), type: 'category', deletedAt: new Date().toISOString() };
+            // Move to Trash
+            await setDoc(doc(db, TRASH_COLLECTION, id), catData);
+            // Delete from Categories
+            await deleteDoc(doc(db, CATEGORIES_COLLECTION, id));
+            return catData; // Return data to know what was deleted (name is needed for cascading books)
+        }
+        return null;
     } catch (error) {
         console.error("Error deleting category:", error);
         throw error;
@@ -145,7 +164,7 @@ export const moveToTrashAPI = async (book) => {
     try {
         const { id, ...bookData } = book;
         // 1. Add to Trash
-        await setDoc(doc(db, TRASH_COLLECTION, id), { ...bookData, deletedAt: new Date().toISOString() });
+        await setDoc(doc(db, TRASH_COLLECTION, id), { ...bookData, type: 'product', deletedAt: new Date().toISOString() });
         // 2. Delete from Products
         await deleteDoc(doc(db, COLLECTION_NAME, id));
         return id;
@@ -155,19 +174,20 @@ export const moveToTrashAPI = async (book) => {
     }
 };
 
-export const restoreBookAPI = async (book) => {
+export const restoreBookAPI = async (item) => {
     try {
-        const { id, ...bookData } = book;
-        // Remove extra fields if any
-        const { deletedAt, ...rest } = bookData;
+        const { id, ...data } = item;
+        const { deletedAt, type, ...rest } = data; // Remove trash metadata
 
-        // 1. Add back to Products
-        await setDoc(doc(db, COLLECTION_NAME, id), rest);
+        const targetCollection = (type === 'category') ? CATEGORIES_COLLECTION : COLLECTION_NAME;
+
+        // 1. Add back to original collection
+        await setDoc(doc(db, targetCollection, id), rest);
         // 2. Delete from Trash
         await deleteDoc(doc(db, TRASH_COLLECTION, id));
-        return { id, ...rest };
+        return { id, ...rest, type };
     } catch (error) {
-        console.error("Error restoring book: ", error);
+        console.error("Error restoring item: ", error);
         throw error;
     }
 };

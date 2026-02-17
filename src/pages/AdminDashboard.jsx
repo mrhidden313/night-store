@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { BookContext, CATEGORIES, WHATSAPP_NUMBER } from '../context/BookContext';
-import { Trash2, PlusCircle, Layout, GripVertical, Code, Eye, Image as ImageIcon, Phone, MessageCircle, Settings, RotateCcw, Pencil, Package, Tag, RefreshCw, XCircle } from 'lucide-react';
+import { Trash2, PlusCircle, Layout, GripVertical, Code, Eye, Image as ImageIcon, Phone, MessageCircle, Settings, RotateCcw, Pencil, Package, Tag, RefreshCw, XCircle, Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
@@ -39,7 +39,7 @@ const SortableBook = ({ book, onDelete, onEdit }) => {
 };
 
 const AdminDashboard = () => {
-    const { books, trash, addBook, updateBook, deleteBook, restoreBook, permanentDeleteBook, emptyTrash, logo, updateLogo, reorderBooks, whatsappNumber, updateWhatsappNumber, whatsappGroup, updateWhatsappGroup, categoryButtons, updateCategoryButton, resetToDefaults, categories, customCategories, addCategory, deleteCategory } = useContext(BookContext);
+    const { books, trash, addBook, updateBook, deleteBook, restoreBook, permanentDeleteBook, emptyTrash, logo, updateLogo, reorderBooks, whatsappNumber, updateWhatsappNumber, whatsappGroup, updateWhatsappGroup, categoryButtons, updateCategoryButton, resetToDefaults, categories, customCategories, addCategory, deleteCategory, updateCategory } = useContext(BookContext);
     const [formData, setFormData] = useState({
         title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: ''
     });
@@ -52,8 +52,10 @@ const AdminDashboard = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [newCatName, setNewCatName] = useState('');
+    const [editingCatId, setEditingCatId] = useState(null);
+    const [editCatName, setEditCatName] = useState('');
     const [selectedParent, setSelectedParent] = useState('');
-    const [btnBuilder, setBtnBuilder] = useState({ text: 'Click Here', link: 'https://', color: '#16a34a' });
+    const [btnBuilder, setBtnBuilder] = useState({ text: 'Offer Link', link: 'https://', color: '#16a34a' });
 
     const insertCustomButton = () => {
         if (!codeView) {
@@ -416,34 +418,80 @@ const AdminDashboard = () => {
                             return (
                                 <div key={cat} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '12px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                                        <h4 style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>
-                                            {cat}
-                                            {(() => {
-                                                const catObj = customCategories.find(c => c.name === cat);
-                                                return catObj?.parent ? <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 'normal' }}> (in {catObj.parent})</span> : null;
-                                            })()}
-                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}> ({countByCategory(cat)} items)</span>
-                                        </h4>
+                                        {editingCatId === customCategories.find(c => c.name === cat)?.id ? (
+                                            <div style={{ display: 'flex', gap: '0.4rem', flex: 1, marginRight: '1rem' }}>
+                                                <input
+                                                    value={editCatName}
+                                                    onChange={(e) => setEditCatName(e.target.value)}
+                                                    style={{ ...inputStyle, padding: '0.3rem' }}
+                                                    autoFocus
+                                                />
+                                                <button
+                                                    onClick={() => {
+                                                        updateCategory(editingCatId, cat, editCatName);
+                                                        setEditingCatId(null);
+                                                        toast.success('Category updated');
+                                                    }}
+                                                    className="btn"
+                                                    style={{ background: 'var(--primary)', padding: '0.3rem', color: 'white' }}
+                                                >
+                                                    <Save size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingCatId(null)}
+                                                    className="btn"
+                                                    style={{ background: 'rgba(255,255,255,0.1)', padding: '0.3rem' }}
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <h4 style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>
+                                                {cat}
+                                                {(() => {
+                                                    const catObj = customCategories.find(c => c.name === cat);
+                                                    return catObj?.parent ? <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 'normal' }}> (in {catObj.parent})</span> : null;
+                                                })()}
+                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}> ({countByCategory(cat)} items)</span>
+                                            </h4>
+                                        )}
 
-                                        {!isFixed && (
-                                            <button
-                                                onClick={() => {
-                                                    if (window.confirm(`Delete category "${cat}"? Products in this category will remain but filter will be removed.`)) {
+                                        <div style={{ display: 'flex', gap: '0.3rem' }}>
+                                            {!isFixed && !editingCatId && (
+                                                <button
+                                                    onClick={() => {
                                                         const catObj = customCategories.find(c => c.name === cat);
                                                         if (catObj) {
-                                                            deleteCategory(catObj.id, cat);
-                                                            toast.success('Category deleted');
-                                                        } else {
-                                                            toast.error('Error finding category ID');
+                                                            setEditingCatId(catObj.id);
+                                                            setEditCatName(cat);
                                                         }
-                                                    }
-                                                }}
-                                                className="btn"
-                                                style={{ padding: '0.3rem', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
+                                                    }}
+                                                    className="btn"
+                                                    style={{ padding: '0.3rem', color: 'var(--accent-gold)', border: '1px solid rgba(251,191,36,0.3)' }}
+                                                >
+                                                    <Pencil size={14} />
+                                                </button>
+                                            )}
+                                            {!isFixed && (
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm(`Delete category "${cat}"? \n\n⚠️ WARNING: ALL products in this category will also be moved to TRASH!`)) {
+                                                            const catObj = customCategories.find(c => c.name === cat);
+                                                            if (catObj) {
+                                                                deleteCategory(catObj.id, cat);
+                                                                toast.success('Category & Products moved to Trash');
+                                                            } else {
+                                                                toast.error('Error finding category ID.');
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="btn"
+                                                    style={{ padding: '0.3rem', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                                         <input

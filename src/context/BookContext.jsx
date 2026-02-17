@@ -4,7 +4,7 @@ import {
     getSettings, saveSettings,
     getCategoryButtons, saveCategoryButtons, resetToDefaults,
     getCategoryButtons, saveCategoryButtons, resetToDefaults,
-    getCategoriesAPI, addCategoryAPI, deleteCategoryAPI,
+    getCategoriesAPI, addCategoryAPI, deleteCategoryAPI, updateCategoryAPI,
     getTrashAPI, moveToTrashAPI, restoreBookAPI, permanentDeleteBookAPI, emptyTrashAPI
 } from '../services/api';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'; // Direct import from SDK
@@ -173,12 +173,57 @@ export const BookProvider = ({ children }) => {
         }
     };
 
+    const updateCategory = async (id, oldName, newName) => {
+        try {
+            await updateCategoryAPI(id, newName);
+
+            // 1. Update Category List
+            setCustomCategories(prev => prev.map(c => c.id === id ? { ...c, name: newName } : c));
+            setCategories(prev => prev.map(c => c === oldName ? newName : c));
+            if (activeCategory === oldName) setActiveCategory(newName);
+
+            // 2. Update all products with this category
+            // We need to update them in DB and State. 
+            // Optimizing: Update state immediately, background update DB? Or await all? 
+            // Let's await all to be safe.
+            const booksToUpdate = books.filter(b => b.category === oldName);
+            const updatePromises = booksToUpdate.map(b => updateBookAPI({ ...b, category: newName }));
+            await Promise.all(updatePromises);
+
+            setBooks(prev => prev.map(b => b.category === oldName ? { ...b, category: newName } : b));
+
+        } catch (e) {
+            console.error("Failed to update category", e);
+        }
+    };
+
     const deleteCategory = async (id, name) => {
         try {
-            await deleteCategoryAPI(id);
+            // 1. Move Category to Trash (API handles the move)
+            const deletedCat = await deleteCategoryAPI(id);
+
+            // 2. Update Local Category State
             setCustomCategories(prev => prev.filter(c => c.id !== id));
             setCategories(prev => prev.filter(c => c !== name));
             if (activeCategory === name) setActiveCategory('All');
+
+            if (deletedCat) {
+                setTrash(prev => [{ ...deletedCat, title: `Category: ${deletedCat.name}` }, ...prev]); // Add cat to trash state
+            }
+
+            // 3. Cascade: Move all products of this category to Trash
+            const booksToDelete = books.filter(b => b.category === name);
+            if (booksToDelete.length > 0) {
+                const deletePromises = booksToDelete.map(b => moveToTrashAPI(b));
+                await Promise.all(deletePromises);
+
+                // Update Books State
+                setBooks(prev => prev.filter(b => b.category !== name));
+
+                // Update Trash State (Add these books)
+                setTrash(prev => [...booksToDelete, ...prev]);
+            }
+
         } catch (e) {
             console.error("Failed to delete category", e);
         }
@@ -223,7 +268,9 @@ export const BookProvider = ({ children }) => {
             whatsappGroup, updateWhatsappGroup,
             categoryButtons, updateCategoryButton,
             activeCategory, setActiveCategory,
-            categories, customCategories, addCategory, deleteCategory, // Exposed
+            categoryButtons, updateCategoryButton,
+            activeCategory, setActiveCategory,
+            categories, customCategories, addCategory, deleteCategory, updateCategory,
             resetToDefaults
         }}>
             {children}
