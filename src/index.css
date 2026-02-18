@@ -13,6 +13,15 @@
     --font-outfit: 'Outfit', sans-serif;
 }
 
+/* Light Mode */
+[data-theme="light"] {
+    --bg-dark: #f0f4f8;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(6, 182, 212, 0.15);
+    --text-primary: #0f172a;
+    --text-muted: #475569;
+}
+
 * {
     margin: 0;
     padding: 0;

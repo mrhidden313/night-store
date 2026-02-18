@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useContext, useState, useEffect } from 'react';
 import { BookContext } from '../context/BookContext';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Tag, Share2, MessageCircle, Copy, Check } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import SEO from '../components/SEO';
 import BookCard from '../components/BookCard';
@@ -14,6 +14,8 @@ const BookDetail = () => {
 
     const [countdown, setCountdown] = useState(15);
     const [canDownload, setCanDownload] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [showShare, setShowShare] = useState(false);
 
     useEffect(() => {
         if (book?.type === 'free' && countdown > 0) {
@@ -54,7 +56,7 @@ const BookDetail = () => {
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Tag size={14} /> {book.category}</span>
                     </div>
                     <h1 className="outfit" style={{ fontSize: 'clamp(1.5rem, 4vw, 3rem)', color: 'white', marginBottom: '1.5rem' }}>{book.title}</h1>
-                    <img src={book.image} alt={book.title} style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '16px' }} />
+                    <img src={book.image} alt={book.title} loading="lazy" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '16px' }} />
                 </header>
 
                 <div
@@ -116,6 +118,41 @@ const BookDetail = () => {
                                 Join WhatsApp Group
                             </a>
                         </>
+                    )}
+                </div>
+
+                {/* Share Section */}
+                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+                    <button onClick={() => {
+                        window.open(`https://wa.me/?text=${encodeURIComponent(`Check out "${book.title}" 👉 ${window.location.href}`)}`, '_blank');
+                    }} style={{
+                        padding: '0.6rem 1.2rem', borderRadius: '10px', border: '1px solid #25d366',
+                        background: 'rgba(37,211,102,0.1)', color: '#25d366', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: '500'
+                    }}>
+                        <MessageCircle size={16} /> Share on WhatsApp
+                    </button>
+                    <button onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                    }} style={{
+                        padding: '0.6rem 1.2rem', borderRadius: '10px', border: '1px solid var(--glass-border)',
+                        background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: '500'
+                    }}>
+                        {copied ? <><Check size={16} /> Copied!</> : <><Copy size={16} /> Copy Link</>}
+                    </button>
+                    {navigator.share && (
+                        <button onClick={() => {
+                            navigator.share({ title: book.title, text: book.excerpt || book.title, url: window.location.href }).catch(() => { });
+                        }} style={{
+                            padding: '0.6rem 1.2rem', borderRadius: '10px', border: '1px solid var(--glass-border)',
+                            background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: '500'
+                        }}>
+                            <Share2 size={16} /> Share
+                        </button>
                     )}
                 </div>
             </article>

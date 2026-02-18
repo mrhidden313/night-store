@@ -1,14 +1,55 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ArrowRight } from 'lucide-react';
+import { MessageCircle, ArrowRight, Share2, Copy, Check } from 'lucide-react';
 import { WHATSAPP_NUMBER, BookContext } from '../context/BookContext';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
+
+const BADGE_STYLES = {
+    'New': { bg: 'linear-gradient(135deg, #06b6d4, #3b82f6)', icon: '✨' },
+    'Hot': { bg: 'linear-gradient(135deg, #ef4444, #f97316)', icon: '🔥' },
+    'Best Seller': { bg: 'linear-gradient(135deg, #f59e0b, #eab308)', icon: '⭐' },
+    'Limited': { bg: 'linear-gradient(135deg, #8b5cf6, #ec4899)', icon: '⏰' },
+};
 
 const BookCard = ({ book, index = 0 }) => {
     const { whatsappNumber } = useContext(BookContext);
+    const [showShare, setShowShare] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const whatsappMessage = `I want to buy "${book.title}"`;
     const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+    const productUrl = `${window.location.origin}/product/${book.id}`;
+
+    const handleShare = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowShare(!showShare);
+    };
+
+    const handleCopyLink = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigator.clipboard.writeText(productUrl);
+        setCopied(true);
+        setTimeout(() => { setCopied(false); setShowShare(false); }, 1500);
+    };
+
+    const handleWhatsAppShare = (e) => {
+        e.stopPropagation();
+        window.open(`https://wa.me/?text=${encodeURIComponent(`Check out "${book.title}" 👉 ${productUrl}`)}`, '_blank');
+        setShowShare(false);
+    };
+
+    const handleNativeShare = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: book.title, text: book.excerpt || book.title, url: productUrl });
+            } catch { /* user cancelled */ }
+        }
+        setShowShare(false);
+    };
 
     // Alternate animation directions for variety
     const directions = [
@@ -20,6 +61,7 @@ const BookCard = ({ book, index = 0 }) => {
         { x: 0, y: -50 },   // from top
     ];
     const dir = directions[index % directions.length];
+    const badge = BADGE_STYLES[book.badge];
 
     return (
         <motion.div
@@ -45,6 +87,7 @@ const BookCard = ({ book, index = 0 }) => {
                 <img
                     src={book.image}
                     alt={book.title}
+                    loading="lazy"
                     style={{
                         width: '100%',
                         height: '100%',
@@ -53,12 +96,26 @@ const BookCard = ({ book, index = 0 }) => {
                     }}
                     className="card-img"
                 />
+
+                {/* Badge */}
+                {badge && (
+                    <div style={{
+                        position: 'absolute', top: '10px', left: '10px',
+                        background: badge.bg, padding: '4px 10px', borderRadius: '20px',
+                        fontSize: '0.7rem', color: 'white', fontWeight: '600',
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                    }}>
+                        {badge.icon} {book.badge}
+                    </div>
+                )}
+
+                {/* Free/Premium tag */}
                 <div style={{
                     position: 'absolute',
                     top: '10px',
                     right: '10px',
                     background: 'rgba(0,0,0,0.6)',
-                    // backdropFilter: 'blur(4px)',
                     padding: '4px 10px',
                     borderRadius: '20px',
                     fontSize: '0.75rem',
@@ -93,6 +150,63 @@ const BookCard = ({ book, index = 0 }) => {
                         <span style={{ fontSize: '1.1rem', fontWeight: '700', color: book.type === 'paid' ? 'var(--accent-gold)' : 'var(--secondary)' }}>
                             {book.type === 'free' ? 'Free' : (book.price || 'Ask Price')}
                         </span>
+                        {/* Share Button */}
+                        <div style={{ position: 'relative' }}>
+                            <button onClick={handleShare} style={{
+                                background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)',
+                                borderRadius: '8px', padding: '6px 8px', cursor: 'pointer', color: 'var(--text-muted)',
+                                display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem',
+                                transition: 'all 0.2s ease'
+                            }}
+                                onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.15)'}
+                                onMouseLeave={e => e.target.style.background = 'rgba(255,255,255,0.08)'}
+                            >
+                                <Share2 size={14} />
+                            </button>
+
+                            {/* Share Dropdown */}
+                            {showShare && (
+                                <div style={{
+                                    position: 'absolute', bottom: '100%', right: 0, marginBottom: '6px',
+                                    background: 'rgba(15,23,42,0.95)', border: '1px solid var(--glass-border)',
+                                    borderRadius: '10px', padding: '6px', minWidth: '150px', zIndex: 50,
+                                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)'
+                                }}>
+                                    <button onClick={handleWhatsAppShare} style={{
+                                        width: '100%', padding: '8px 10px', background: 'none', border: 'none',
+                                        color: '#25d366', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                                        gap: '8px', fontSize: '0.8rem', borderRadius: '6px',
+                                    }}
+                                        onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.05)'}
+                                        onMouseLeave={e => e.target.style.background = 'none'}
+                                    >
+                                        <MessageCircle size={14} /> WhatsApp
+                                    </button>
+                                    <button onClick={handleCopyLink} style={{
+                                        width: '100%', padding: '8px 10px', background: 'none', border: 'none',
+                                        color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                                        gap: '8px', fontSize: '0.8rem', borderRadius: '6px',
+                                    }}
+                                        onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.05)'}
+                                        onMouseLeave={e => e.target.style.background = 'none'}
+                                    >
+                                        {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Link</>}
+                                    </button>
+                                    {navigator.share && (
+                                        <button onClick={handleNativeShare} style={{
+                                            width: '100%', padding: '8px 10px', background: 'none', border: 'none',
+                                            color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                                            gap: '8px', fontSize: '0.8rem', borderRadius: '6px',
+                                        }}
+                                            onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.05)'}
+                                            onMouseLeave={e => e.target.style.background = 'none'}
+                                        >
+                                            <Share2 size={14} /> More...
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <Link to={`/product/${book.id}`} className="btn" style={{

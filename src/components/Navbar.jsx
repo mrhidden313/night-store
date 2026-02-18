@@ -1,14 +1,22 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { BookContext, CATEGORIES } from '../context/BookContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Menu, X } from 'lucide-react';
+import { LogOut, Menu, X, Sun, Moon } from 'lucide-react';
 
 const Navbar = () => {
     const { isAdmin, logout, logo, activeCategory, setActiveCategory, categories } = useContext(BookContext);
     const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
     const isHome = location.pathname === '/';
+
+    // Theme toggle
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+    const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
     return (
         <nav className="glass-panel" style={{ position: 'sticky', top: 0, zIndex: 1000, borderRadius: '0 0 16px 16px', borderTop: 'none' }}>
@@ -40,14 +48,25 @@ const Navbar = () => {
                     )}
                 </div>
 
-                {/* Hamburger */}
-                <button
-                    className="nav-hamburger"
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    style={{ display: 'none', background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.3rem', alignItems: 'center', justifyContent: 'center' }}
-                >
-                    {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-                </button>
+                {/* Theme Toggle + Hamburger */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button onClick={toggleTheme} style={{
+                        background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)',
+                        borderRadius: '8px', padding: '6px', cursor: 'pointer', color: 'var(--text-muted)',
+                        display: 'flex', alignItems: 'center', transition: 'all 0.3s ease'
+                    }}>
+                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+
+                    {/* Hamburger */}
+                    <button
+                        className="nav-hamburger"
+                        onClick={() => setMobileOpen(!mobileOpen)}
+                        style={{ display: 'none', background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.3rem', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Menu */}

@@ -1,10 +1,10 @@
 import { Helmet } from 'react-helmet-async';
 
 const SEO = ({ title, description, image, url }) => {
-    const siteTitle = "VetBook - Premium Veterinary Books";
+    const siteTitle = "Night Store - Midnight Deals";
     const fullTitle = `${title} | ${siteTitle}`;
-    const defaultDesc = "Buy premium veterinary books and PDFs. Trusted source for vet students and professionals.";
-    const siteUrl = "https://vetbook.store"; // Change to your actual domain
+    const defaultDesc = "Premium software subscriptions, VPNs, and tech courses at the best prices. Instant delivery via WhatsApp.";
+    const siteUrl = "https://night-store.vercel.app"; // Change to your actual domain
 
     return (
         <Helmet>

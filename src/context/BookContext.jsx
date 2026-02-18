@@ -1,6 +1,6 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useRef, useCallback } from 'react';
 import {
-    getBooks, addBookAPI, updateBookAPI, deleteBookAPI, reorderBooksAPI,
+    getBooks, getAllBooks, addBookAPI, updateBookAPI, deleteBookAPI, reorderBooksAPI,
     getSettings, saveSettings,
     getCategoryButtons, saveCategoryButtons, resetToDefaults,
 
@@ -23,8 +23,12 @@ export const WHATSAPP_NUMBER = '923709283496';
 
 export const BookProvider = ({ children }) => {
     const [books, setBooks] = useState([]);
+    const [allBooks, setAllBooks] = useState([]); // Full list for Admin
     const [trash, setTrash] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const lastDocRef = useRef(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
 
@@ -38,22 +42,108 @@ export const BookProvider = ({ children }) => {
     const [categories, setCategories] = useState(['All', 'Free', 'Paid']); // UI list
     const [customCategories, setCustomCategories] = useState([]); // DB list
 
-    // Load data on mount
-    useEffect(() => {
-        const fetchBooks = async () => {
-            setLoading(true);
-            const data = await getBooks();
-            setBooks(data);
+    // Ref to track current category for preventing race conditions
+    const activeCategoryRef = useRef(activeCategory);
+    useEffect(() => { activeCategoryRef.current = activeCategory; }, [activeCategory]);
+
+    // Ref to prevent parallel fetches (fix for duplicates)
+    const isFetchingRef = useRef(false);
+
+    // Progressive Auto-Loading: Load 3 posts, then auto-load next 3, repeat
+    const loadNextBatch = useCallback(async (isFirst = false) => {
+        // RACE CONDITION GUARD: 
+        if (activeCategoryRef.current !== activeCategory) return;
+
+        // PARALLEL FETCH GUARD:
+        if (isFetchingRef.current) return;
+        isFetchingRef.current = true;
+
+        try {
+            if (isFirst) {
+                setLoading(true);
+                lastDocRef.current = null;
+                setHasMore(true);
+            } else {
+                setLoadingMore(true);
+            }
+
+            // Determine filter params
+            let filterParam = activeCategory;
+            if (!['All', 'Free', 'Paid'].includes(activeCategory)) {
+                const children = customCategories.filter(c => c.parent === activeCategory).map(c => c.name);
+                if (children.length > 0) {
+                    filterParam = [activeCategory, ...children];
+                }
+            }
+
+            const { books: newBooks, lastDoc, hasMore: more } = await getBooks(lastDocRef.current, filterParam);
+
+            // Checks after await
+            if (activeCategoryRef.current !== activeCategory) {
+                isFetchingRef.current = false;
+                return;
+            }
+
+            lastDocRef.current = lastDoc;
+            setHasMore(more);
+
+            // DEDUPLICATION LOGIC
+            setBooks(prev => {
+                const combined = isFirst ? newBooks : [...prev, ...newBooks];
+                // Remove duplicates by ID
+                const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
+                return unique;
+            });
+
             setLoading(false);
+            setLoadingMore(false);
+
+            // Release lock
+            isFetchingRef.current = false;
+
+            // Auto-load next batch
+            if (more) {
+                setTimeout(() => {
+                    if (activeCategoryRef.current === activeCategory) {
+                        loadNextBatch(false);
+                    }
+                }, 500);
+            }
+        } catch (e) {
+            console.error('Failed to load books', e);
+            setLoading(false);
+            setLoadingMore(false);
+            isFetchingRef.current = false;
+        }
+    }, [activeCategory, customCategories]);
+
+    // Load data on mount & category change
+    useEffect(() => {
+        setBooks([]); // Strict Clear
+        lastDocRef.current = null;
+        setHasMore(true);
+        isFetchingRef.current = false; // Reset lock
+
+        // Small timeout to ensure state clears before new fetch
+        const t = setTimeout(() => {
+            loadNextBatch(true);
+        }, 10);
+        return () => clearTimeout(t);
+    }, [activeCategory, loadNextBatch]); // loadNextBatch now depends on activeCategory
+
+    // Initial Load of Meta Data
+    useEffect(() => {
+        // Also load ALL books for admin (in background, no rush)
+        const loadAllForAdmin = async () => {
+            const all = await getAllBooks();
+            setAllBooks(all);
         };
-        fetchBooks();
+        loadAllForAdmin();
 
         const fetchCategories = async () => {
             const dbCats = await getCategoriesAPI();
             setCustomCategories(dbCats);
-            // Merge fixed + custom (names only for UI)
             const names = dbCats.map(c => c.name);
-            // We still keep 'categories' flat for legacy support if needed, or just for the dropdown basics
             setCategories(['All', 'Free', 'Paid', ...names]);
         };
         fetchCategories();
@@ -267,7 +357,8 @@ export const BookProvider = ({ children }) => {
 
     return (
         <BookContext.Provider value={{
-            books, trash, loading, addBook, updateBook, deleteBook, reorderBooks,
+            books, allBooks, trash, loading, loadingMore, hasMore,
+            addBook, updateBook, deleteBook, reorderBooks,
             restoreBook, permanentDeleteBook, emptyTrash,
             isAdmin, authLoading, login, logout,
             logo, updateLogo,

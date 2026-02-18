@@ -39,9 +39,9 @@ const SortableBook = ({ book, onDelete, onEdit }) => {
 };
 
 const AdminDashboard = () => {
-    const { books, trash, addBook, updateBook, deleteBook, restoreBook, permanentDeleteBook, emptyTrash, logo, updateLogo, reorderBooks, whatsappNumber, updateWhatsappNumber, whatsappGroup, updateWhatsappGroup, categoryButtons, updateCategoryButton, resetToDefaults, categories, customCategories, addCategory, deleteCategory, updateCategory } = useContext(BookContext);
+    const { allBooks: books, trash, addBook, updateBook, deleteBook, restoreBook, permanentDeleteBook, emptyTrash, logo, updateLogo, reorderBooks, whatsappNumber, updateWhatsappNumber, whatsappGroup, updateWhatsappGroup, categoryButtons, updateCategoryButton, resetToDefaults, categories, customCategories, addCategory, deleteCategory, updateCategory } = useContext(BookContext);
     const [formData, setFormData] = useState({
-        title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: ''
+        title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: '', badge: ''
     });
     const [editingId, setEditingId] = useState(null);
     const [codeView, setCodeView] = useState(false);
@@ -49,6 +49,7 @@ const AdminDashboard = () => {
     const [tempWhatsapp, setTempWhatsapp] = useState(whatsappNumber || WHATSAPP_NUMBER);
     const [tempGroupLink, setTempGroupLink] = useState(whatsappGroup || '');
     const [activeTab, setActiveTab] = useState('add');
+    const [inventoryFilter, setInventoryFilter] = useState('All');
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [newCatName, setNewCatName] = useState('');
@@ -104,7 +105,7 @@ const AdminDashboard = () => {
 
     const cancelEdit = () => {
         setEditingId(null);
-        setFormData({ title: '', excerpt: '', content: '', image: '', category: CATEGORIES[1], tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: '' });
+        setFormData({ title: '', excerpt: '', content: '', image: '', category: CATEGORIES[1], tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: '', badge: '' });
         toast.info('Edit cancelled');
     };
 
@@ -147,7 +148,7 @@ const AdminDashboard = () => {
                 }, 500);
             }
             // Reset form
-            setFormData({ title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: '' });
+            setFormData({ title: '', excerpt: '', content: '', image: '', category: categories[1] || 'Free', tags: '', type: 'free', author: 'Night Store', price: '', whatsappText: '', downloadUrl: '', badge: '' });
         } catch (error) {
             clearInterval(progressInterval);
             setUploading(false);
@@ -265,6 +266,19 @@ const AdminDashboard = () => {
                             <input placeholder="Tags (e.g. vpn, software)" value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} style={inputStyle} />
                         </div>
 
+                        {/* Badge Dropdown */}
+                        <select
+                            value={formData.badge || ''}
+                            onChange={e => setFormData({ ...formData, badge: e.target.value })}
+                            style={{ ...inputStyle, cursor: 'pointer' }}
+                        >
+                            <option value="">No Badge</option>
+                            <option value="New">✨ New</option>
+                            <option value="Hot">🔥 Hot</option>
+                            <option value="Best Seller">⭐ Best Seller</option>
+                            <option value="Limited">⏰ Limited</option>
+                        </select>
+
                         {formData.type === 'paid' ? (
                             <input placeholder="Price (e.g. Rs. 500)" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} style={{ ...inputStyle, borderColor: 'rgba(251,191,36,0.3)' }} />
                         ) : (
@@ -350,19 +364,19 @@ const AdminDashboard = () => {
                     {/* Category filters */}
                     <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                         {categories.map(cat => (
-                            <span key={cat} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>
-                                {cat === 'All' ? `All (${books.length})` : `${cat} (${countByCategory(cat)} items)`}
-                            </span>
+                            <button key={cat} onClick={() => setInventoryFilter(cat)} style={{ fontSize: '0.7rem', padding: '4px 10px', borderRadius: '6px', background: inventoryFilter === cat ? 'var(--primary)' : 'rgba(255,255,255,0.05)', color: inventoryFilter === cat ? 'white' : 'var(--text-muted)', border: inventoryFilter === cat ? '1px solid var(--primary)' : '1px solid transparent', cursor: 'pointer', fontWeight: inventoryFilter === cat ? '600' : '400' }}>
+                                {cat === 'All' ? `All (${books.length})` : `${cat} (${countByCategory(cat)})`}
+                            </button>
                         ))}
                     </div>
 
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={books.map(b => b.id)} strategy={verticalListSortingStrategy}>
-                            {books.map(book => <SortableBook key={book.id} book={book} onDelete={deleteBook} onEdit={handleEdit} />)}
+                        <SortableContext items={(inventoryFilter === 'All' ? books : books.filter(b => b.category === inventoryFilter)).map(b => b.id)} strategy={verticalListSortingStrategy}>
+                            {(inventoryFilter === 'All' ? books : books.filter(b => b.category === inventoryFilter)).map(book => <SortableBook key={book.id} book={book} onDelete={deleteBook} onEdit={handleEdit} />)}
                         </SortableContext>
                     </DndContext>
 
-                    {books.length === 0 && <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>No products yet.</p>}
+                    {(inventoryFilter === 'All' ? books : books.filter(b => b.category === inventoryFilter)).length === 0 && <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>No products in this category.</p>}
                 </div>
             )}
 

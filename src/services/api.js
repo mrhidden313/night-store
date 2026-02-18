@@ -1,5 +1,5 @@
-import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from './firebase';
-import { setDoc, getDoc, where } from 'firebase/firestore';
+import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, startAfter, limit, where } from './firebase';
+import { setDoc, getDoc } from 'firebase/firestore';
 
 const COLLECTION_NAME = 'products';
 const CATEGORIES_COLLECTION = 'categories';
@@ -12,20 +12,54 @@ const DEFAULT_ITEMS = [
     // ... items can be re-seeded if needed
 ];
 
-// ===== ITEMS (PRODUCTS) =====
+// Progressive Loading: 3 posts per batch
+const BATCH_SIZE = 3;
 
-export const getBooks = async () => {
+export const getBooks = async (lastDoc = null, filter = 'All') => {
     try {
-        const q = query(collection(db, COLLECTION_NAME));
+        let q;
+        const productsRef = collection(db, COLLECTION_NAME);
+
+        // Determine constraints based on filter
+        let constraints = [];
+
+        // Filter Logic
+        if (filter !== 'All') {
+            if (filter === 'Free') {
+                constraints.push(where('type', '==', 'free'));
+            } else if (filter === 'Paid') {
+                constraints.push(where('type', '==', 'paid'));
+            } else if (Array.isArray(filter)) {
+                // Parent + Children (array of strings)
+                // Firestore 'in' limit is 10. If > 10, this might fail, but for now it's safe.
+                constraints.push(where('category', 'in', filter.slice(0, 10)));
+            } else {
+                // Single Category
+                constraints.push(where('category', '==', filter));
+            }
+        }
+
+        // Pagination
+        // Note: 'orderBy' is required for pagination if we want consistent ordering. 
+        // Adding orderBy('id') or 'createdAt' is recommended but existing code didn't have it.
+        // We'll stick to basic limit/startAfter for now, but strict query usually needs index.
+
+        if (lastDoc) {
+            constraints.push(startAfter(lastDoc));
+        }
+
+        constraints.push(limit(BATCH_SIZE));
+
+        q = query(productsRef, ...constraints);
+
         const querySnapshot = await getDocs(q);
         const books = [];
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            // Sanitize data to prevent crashes (handle missing title, category, tags)
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
             books.push({
-                id: doc.id,
+                id: docSnap.id,
                 ...data,
-                title: data.title || data.name || 'Untitled Product', // Fallback for manual entries
+                title: data.title || data.name || 'Untitled Product',
                 category: data.category || 'All',
                 type: data.type || 'paid',
                 price: data.price || 'Contact',
@@ -34,13 +68,39 @@ export const getBooks = async () => {
             });
         });
 
-        if (books.length === 0) {
-            // Optional: Seed default if empty? No, returns empty array.
-            return [];
-        }
-        return books;
+        // Get last document for next page cursor
+        const newLastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+        const hasMore = querySnapshot.docs.length === BATCH_SIZE;
+
+        return { books, lastDoc: newLastDoc, hasMore };
     } catch (error) {
         console.error("Error getting documents: ", error);
+        return { books: [], lastDoc: null, hasMore: false };
+    }
+};
+
+// Fetch ALL books (used by Admin Dashboard & Search)
+export const getAllBooks = async () => {
+    try {
+        const q = query(collection(db, COLLECTION_NAME));
+        const querySnapshot = await getDocs(q);
+        const books = [];
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            books.push({
+                id: docSnap.id,
+                ...data,
+                title: data.title || data.name || 'Untitled Product',
+                category: data.category || 'All',
+                type: data.type || 'paid',
+                price: data.price || 'Contact',
+                tags: data.tags || [],
+                image: data.image || '/logo.png'
+            });
+        });
+        return books;
+    } catch (error) {
+        console.error("Error getting all documents: ", error);
         return [];
     }
 };
